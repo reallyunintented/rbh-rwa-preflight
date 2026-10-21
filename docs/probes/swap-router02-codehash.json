@@ -1,0 +1,13 @@
+{
+  "host": "rpc.mainnet.chain.robinhood.com",
+  "address": "0xcaf681a66d020601342297493863e78c959e5cb2",
+  "method": "eth_getCode",
+  "params": [
+    "0xcaf681a66d020601342297493863e78c959e5cb2",
+    "latest"
+  ],
+  "blockNumber": "0x5a16b7b",
+  "codehash": "0x6f36c378e272c6324c48f045182bcb54bd8ad654cf9ebd42e8893d52c4cb25dc",
+  "codeLength": 48996,
+  "capturedAt": "2026-10-21T17:43:21.327Z"
+}

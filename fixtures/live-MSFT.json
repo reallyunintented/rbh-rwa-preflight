@@ -1,0 +1,70 @@
+{
+  "synthetic": false,
+  "schema": "rwa-preflight/fixture/v0.1",
+  "symbol": "MSFT",
+  "recordedAtBlock": "94337335",
+  "blockHash": "0x3b17cafcf4277b4f32b79226b02861571b4f679dd06a22f461871d74428663bd",
+  "blockTimestamp": 1792591391,
+  "chainId": 4663,
+  "token": {
+    "address": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
+    "decimals": 18,
+    "uiMultiplier": "1000412952576205964",
+    "oraclePaused": false,
+    "newUIMultiplier": "1000412952576205964",
+    "effectiveAt": "1789139430"
+  },
+  "registryEntry": {
+    "symbol": "MSFT",
+    "name": "Microsoft • Robinhood Token",
+    "address": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
+    "decimals": 18,
+    "uiMultiplier": "1000412952576205964",
+    "oraclePaused": false,
+    "currentMultiplier": "1.000412952576205964",
+    "tradingCapabilities": {
+      "market": {
+        "whole": "TRADING_STATUS_TRADABLE",
+        "fractional": "TRADING_STATUS_TRADABLE"
+      },
+      "extended": {
+        "whole": "TRADING_STATUS_TRADABLE",
+        "fractional": "TRADING_STATUS_TRADABLE"
+      },
+      "overnight": {
+        "whole": "TRADING_STATUS_TRADABLE",
+        "fractional": "TRADING_STATUS_TRADABLE"
+      }
+    },
+    "feed": null,
+    "source": "https://api.robinhood.com/rhj/assets + https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json + on-chain probe"
+  },
+  "feed": {
+    "proxyAddress": "0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
+    "decimals": 8,
+    "roundId": "18446744073709552574",
+    "answer": "52971465673",
+    "startedAt": "1792589859",
+    "updatedAt": "1792589871",
+    "answeredInRound": "18446744073709552574",
+    "heartbeat": 86400
+  },
+  "rest": {
+    "currentMultiplier": "1.000412952576205964",
+    "tradingCapabilities": {
+      "market": {
+        "whole": "TRADING_STATUS_TRADABLE",
+        "fractional": "TRADING_STATUS_TRADABLE"
+      },
+      "extended": {
+        "whole": "TRADING_STATUS_TRADABLE",
+        "fractional": "TRADING_STATUS_TRADABLE"
+      },
+      "overnight": {
+        "whole": "TRADING_STATUS_TRADABLE",
+        "fractional": "TRADING_STATUS_TRADABLE"
+      }
+    }
+  },
+  "recordedAtUnix": 1792591395
+}

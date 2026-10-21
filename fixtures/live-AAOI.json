@@ -1,0 +1,202 @@
+{
+  "assessment": {
+    "schema": "rwa-preflight/assessment/v0.2",
+    "verdict": "BLOCKED",
+    "reasons": [
+      "RPC_INCONSISTENT",
+      "ASSET_UNKNOWN",
+      "SEQUENCER_DOWN",
+      "PRICE_INVALID",
+      "ISSUER_SIGNAL_UNAVAILABLE",
+      "ASSUMPTION_UNRESOLVED",
+      "SIM_UNAVAILABLE",
+      "SLIPPAGE_EXCEEDS_POLICY",
+      "TOKEN_NOT_ALLOWED"
+    ],
+    "chain": {
+      "chainId": 4663,
+      "blockHash": "0x0",
+      "blockTimestamp": 0,
+      "finality": "unknown"
+    },
+    "validity": {
+      "pinnedAtBlockTimestamp": 0,
+      "maxAgeSec": 30
+    },
+    "gates": [
+      {
+        "gate": "G0_CONTEXT",
+        "status": "FAIL_HARD",
+        "reasons": [
+          "RPC_INCONSISTENT"
+        ],
+        "enforcement": "advisory",
+        "details": {
+          "pinBlockTag": "latest"
+        },
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G1_ASSET",
+        "status": "FAIL_HARD",
+        "reasons": [
+          "ASSET_UNKNOWN"
+        ],
+        "enforcement": "tx-enforced",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G2_SEQUENCER",
+        "status": "UNKNOWN",
+        "reasons": [
+          "SEQUENCER_DOWN"
+        ],
+        "enforcement": "advisory",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G3_ORACLE",
+        "status": "FAIL_HARD",
+        "reasons": [
+          "PRICE_INVALID"
+        ],
+        "enforcement": "advisory",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G4_CORPORATE_ACTION",
+        "status": "PASS",
+        "reasons": [],
+        "enforcement": "advisory",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G5_ISSUER_SIGNALS",
+        "status": "UNKNOWN",
+        "reasons": [
+          "ISSUER_SIGNAL_UNAVAILABLE"
+        ],
+        "enforcement": "advisory",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G6_VALUATION",
+        "status": "UNKNOWN",
+        "reasons": [
+          "ASSUMPTION_UNRESOLVED"
+        ],
+        "enforcement": "advisory",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G8_SIMULATION",
+        "status": "UNKNOWN",
+        "reasons": [
+          "SIM_UNAVAILABLE"
+        ],
+        "enforcement": "tx-enforced",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G9_EXECUTION_QUALITY",
+        "status": "FAIL_HARD",
+        "reasons": [
+          "SLIPPAGE_EXCEEDS_POLICY"
+        ],
+        "enforcement": "advisory",
+        "details": {},
+        "evidenceRefs": []
+      },
+      {
+        "gate": "G10_POLICY",
+        "status": "FAIL_HARD",
+        "reasons": [
+          "TOKEN_NOT_ALLOWED"
+        ],
+        "enforcement": "tx-enforced",
+        "details": {},
+        "evidenceRefs": []
+      }
+    ],
+    "guarantees": {
+      "enforced": [],
+      "advisory": [],
+      "notAssessed": [
+        "eligibility"
+      ]
+    },
+    "assumptions": [],
+    "limitations": [
+      "minimal assess implementation"
+    ],
+    "hashes": {
+      "inputs": "b30501b50ea45af487a58b4ecfcd5f4ae3ce02e676e3a1165ef90b043571248a",
+      "evidence": "af35c876155b25cfcc36a821418729ee946a81b76933db931c587656230a3bbd",
+      "assessment": "777ecc0adc843bf2b64a7503566d1f59b884cda7a7a15d6f70932034f96ab390"
+    }
+  },
+  "inputs": {
+    "action": {
+      "kind": "swap_exact_in",
+      "chainId": 4663,
+      "account": "0x1111111111111111111111111111111111111111",
+      "tx": {
+        "to": "0x8876789976dEcBfCbBbe364623C63652db8C0904",
+        "data": "0x",
+        "value": "0x0"
+      }
+    },
+    "policy": {
+      "maxSlippageBps": 100,
+      "maxOracleDeviationBps": 150,
+      "maxPoolFeeBps": 100,
+      "offSessionPolicy": "defer",
+      "requireIssuerSignals": true,
+      "maxIssuerSignalAgeSec": 300,
+      "corporateActionLookaheadSec": 86400,
+      "corporateActionLookbackSec": 3600,
+      "maxDeadlineSec": 300,
+      "allowedRecipients": "self",
+      "maxAssessmentAgeSec": 30,
+      "pinBlockTag": "latest"
+    },
+    "registrySlice": {},
+    "calendarSlice": {},
+    "decoders": [],
+    "libraryVersion": "0.0.0",
+    "schemaVersions": {}
+  },
+  "evidence": [
+    {
+      "id": "0571be1387c2ffe6c6bd5bf746aafc1295418cedb54fd97e74254b00d43dd3dc",
+      "source": "rpc",
+      "class": "onchain-reverifiable",
+      "request": {
+        "method": "eth_blockNumber",
+        "params": []
+      },
+      "error": {
+        "message": "Failed to parse URL from undefined"
+      }
+    },
+    {
+      "id": "5463fcabb2074c780a69c751321e70b6cf7e98756a60ffecd21c064d6255c6f7",
+      "source": "rpc",
+      "class": "onchain-reverifiable",
+      "request": {
+        "method": "eth_chainId",
+        "params": []
+      },
+      "error": {
+        "message": "Failed to parse URL from undefined"
+      }
+    }
+  ]
+}
