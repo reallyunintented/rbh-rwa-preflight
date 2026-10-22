@@ -28,3 +28,6 @@ Proposal: Support SwapRouter02 exactInputSingle (0xcaf681a66d020601342297493863e
 
 ## Scope expansion (M8/M9)
 Decision: Move lending/collateral preflight and ERC-4337 smart-account support from non-goals to post-v0.1 milestones M8 and M9. Authorized as scope expansion. Evidence: user request; plan.md updated.
+
+## A3b degraded assurance
+Decision: Enable experimental degraded-mode PASS with conservative thresholds; observe-only by default. Evidence: user authorization on 2026-10-22.

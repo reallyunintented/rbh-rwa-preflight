@@ -1,7 +1,7 @@
 # rwa-preflight
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-56%20passing-brightgreen)](#development)
+[![Tests](https://img.shields.io/badge/tests-83%20passing-brightgreen)](#development)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-blue)](#quick-start)
 
 **rwa-preflight tells an AI agent whether a concrete transaction involving Robinhood Chain Stock Tokens may be sent right now, and produces a self-contained, block-pinned, replayable and tamper-evident receipt.**
@@ -65,6 +65,7 @@ READY is a snapshot verdict: supported format, state-verified constraints, state
 
 ## Known limitations
 - No Chainlink sequencer uptime feed for chain 4663 (G2 -> UNKNOWN). Under strict mode, READY is unreachable on mainnet without a supported sequencer source.
+- Degraded assurance is experimental; thresholds require probe data.
 - Pool landscape not fully surveyed on-chain.
 - USDG is treated as declared-peg unless policy allows oracle basis.
 
