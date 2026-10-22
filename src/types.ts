@@ -44,6 +44,7 @@ export interface ExecutionAssessment {
   assumptions: string[];
   limitations: string[];
   hashes: { inputs: string; evidence: string; assessment: string };
+  policyProvenance?: { source: string; operatorPolicyHash: string; overrides: string[] };
 }
 
 export interface Receipt {
