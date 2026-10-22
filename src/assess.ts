@@ -58,7 +58,7 @@ export async function assess(input: { rpcUrl: string; action: any; policy: any; 
 
   const verdict = aggregate(gates);
   const assessment: any = {
-    schema: 'rwa-preflight/assessment/v0.2',
+    schema: 'rwa-preflight/assessment/v0.3',
     verdict,
     reasons: gates.flatMap((g: any) => g.reasons),
     chain: { chainId: input.action.chainId, blockNumber, blockHash, blockTimestamp, finality: 'unknown' },
@@ -69,6 +69,7 @@ export async function assess(input: { rpcUrl: string; action: any; policy: any; 
     limitations: ['minimal assess implementation'],
     hashes: { inputs: '', evidence: '', assessment: '' },
   };
+  assessment.policyProvenance = (input as any).policyProvenance;
   const receipt = buildReceipt(assessment, { action: input.action, policy: input.policy, registrySlice: {}, calendarSlice: {}, decoders: [], libraryVersion: '0.0.0', schemaVersions: {} }, src.items());
   return receipt;
 }
