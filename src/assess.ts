@@ -39,7 +39,7 @@ export async function assess(input: { rpcUrl: string; action: any; policy: any; 
   const gates: any[] = [];
   gates.push(g0Context({ chainId: input.action.chainId, rpcChainId, blockNumber, blockHash: '0x0', blockTimestamp: 0, pinBlockTag: input.policy.pinBlockTag }));
   gates.push(g1Asset({ inRegistry: false, probeOk: false, pauseFlags: {} }));
-  gates.push(g2Sequencer({ feedKnown: false, up: false, graceElapsed: false }));
+  gates.push(g2Sequencer({ feedKnown: false, up: false, graceElapsed: false, sequencerAssurance: input.policy.sequencerAssurance ?? 'strict', signals: { maxGapSec: 0, headLagSec: 0 }, thresholds: { maxGapSec: input.policy.sequencerMaxGapSec ?? 60, maxHeadLagSec: input.policy.sequencerMaxHeadLagSec ?? 30 } }));
   gates.push(g3Oracle({ paused: false, answer: 0n, updatedAt: 0, now: 0, heartbeatSec: 0, inSession: false }));
   gates.push(g4CorporateAction({ newMultiplier: 0n, currentMultiplier: 0n, effectiveAt: 0, now: 0, lookaheadSec: 0, lookbackSec: 0 }));
   gates.push(g5Issuer({ halt: false, tradable: false, available: false, stale: true, multiplierMatch: false }));
