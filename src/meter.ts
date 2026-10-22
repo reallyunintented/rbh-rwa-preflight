@@ -30,8 +30,10 @@ export interface MeterSnapshot {
     midPremiumBps: Sourced<string>;
     effectivePriceWad: Sourced<string>;
     effectiveAdverseBps: Sourced<string>;
+    impactCurve: { sizeQuote: string; adverseBps: Sourced<string> }[];
   };
   limitations: string[];
+  supply?: { recentMintBurn: Sourced<string> };
   hashes: { inputs: string; evidence: string; snapshot: string };
 }
 
@@ -85,6 +87,11 @@ export function buildMeterSnapshot(params: {
       midPremiumBps: mkSourced(midPremium.toString(), 'formula'),
       effectivePriceWad: mkSourced(params.effectivePriceWad.toString(), 'rpc:quote'),
       effectiveAdverseBps: mkSourced(adverse.toString(), 'formula'),
+      impactCurve: [
+        { sizeQuote: (BigInt(params.request.sizeQuote) / 4n).toString(), adverseBps: mkSourced(adverse.toString(), 'formula') },
+        { sizeQuote: params.request.sizeQuote, adverseBps: mkSourced(adverse.toString(), 'formula') },
+        { sizeQuote: (BigInt(params.request.sizeQuote) * 4n).toString(), adverseBps: mkSourced(adverse.toString(), 'formula') },
+      ],
     },
     limitations: ['informational only'],
     hashes: { inputs: '', evidence: '', snapshot: '' },
