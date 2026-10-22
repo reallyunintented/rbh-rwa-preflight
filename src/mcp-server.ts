@@ -1,4 +1,6 @@
 import { assess } from './assess';
+import { loadOperatorPolicy } from './policy-loader';
+import { validateTightening } from './policy-tighten';
 import { buildMeterSnapshot } from './meter';
 import { verify } from './verify';
 import { MCP_TOOLS } from './mcp';
@@ -12,7 +14,12 @@ process.stdin.on('end', async () => {
     if (req.method === 'tools/list') {
       process.stdout.write(JSON.stringify({ tools: MCP_TOOLS }) + '\n');
     } else if (req.method === 'preflight_assess') {
-      const r = await assess(req.params);
+      let policyProvenance: any;
+      if (req.params?.policyEnv) {
+        const { hash } = loadOperatorPolicy(req.params.policyEnv);
+        policyProvenance = { source: 'operator-file', operatorPolicyHash: hash, overrides: [] };
+      }
+      const r = await assess({ ...req.params, policyProvenance });
       process.stdout.write(JSON.stringify(r) + '\n');
     } else if (req.method === 'meter_snapshot') {
       const snap = buildMeterSnapshot({ request: { asset: req.params?.asset ?? 'AAPL', side: req.params?.side ?? 'buy', sizeQuote: req.params?.size ?? '100' }, chain: { chainId: 4663, blockNumber: '1', blockHash: '0x0', blockTimestamp: 1 }, feedPriceWad: 100n * 10n ** 18n, uiMultiplier: 10n ** 18n, midPriceWad: 101n * 10n ** 18n, effectivePriceWad: 102n * 10n ** 18n });
