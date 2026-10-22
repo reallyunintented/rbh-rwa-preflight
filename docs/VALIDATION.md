@@ -8,3 +8,7 @@ M6 checklist:
 
 ## Outreach contacts
 - (fill in)
+
+## M8/M9 results
+- Lending and smart-account gates integrated into verify L2.
+- Adversarial tests pass.

@@ -6,6 +6,9 @@ export function verifyL1(receipt: any): VerifyResult {
 }
 export function verifyL2(receipt: any): VerifyResult {
   if (!receipt.inputs || !receipt.evidence) return { level: 2, result: 'FAIL' };
+  const gates = receipt?.assessment?.gates ?? [];
+  const m8m9 = gates.filter((g: any) => g?.gate === 'G11_LENDING' || g?.gate === 'G12_SMART_ACCOUNT');
+  if (m8m9.some((g: any) => g.status !== 'PASS')) return { level: 2, result: 'FAIL' };
   return { level: 2, result: verifyHashes(receipt) ? 'PASS' : 'FAIL' };
 }
 export async function verifyL3(receipt: any, rpcProvided: boolean, rpcUrl?: string): Promise<VerifyResult> {
