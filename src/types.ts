@@ -31,6 +31,9 @@ export interface Policy {
   allowedRecipients: Address[] | 'self';
   maxAssessmentAgeSec: number;
   pinBlockTag: 'latest' | 'safe' | 'finalized';
+  sequencerAssurance?: 'strict' | 'degraded';
+  sequencerMaxGapSec?: number;
+  sequencerMaxHeadLagSec?: number;
 }
 
 export interface ExecutionAssessment {
