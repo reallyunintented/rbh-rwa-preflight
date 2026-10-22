@@ -4,7 +4,7 @@
 [![Tests](https://img.shields.io/badge/tests-56%20passing-brightgreen)](#development)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-blue)](#quick-start)
 
-**rwa-preflight tells an AI agent whether a concrete transaction involving Robinhood Chain Stock Tokens may be sent right now, and produces a self-contained, block-pinned, replayable receipt.**
+**rwa-preflight tells an AI agent whether a concrete transaction involving Robinhood Chain Stock Tokens may be sent right now, and produces a self-contained, block-pinned, replayable and tamper-evident receipt.**
 
 ## Why this exists
 AI agents can suggest trades, but they need a deterministic, verifiable pre-trade check before anything is sent. rwa-preflight provides that check without signing or sending anything.
@@ -55,7 +55,6 @@ const receipt = await assess({
 console.log(receipt.assessment.verdict);
 ```
 
-
 ## Optional modules (M8/M9)
 - Lending/collateral preflight (`src/lending.ts`, `src/gates/g11.ts`).
 - Smart-account (ERC-4337) envelope validation (`src/smart-account.ts`).
@@ -65,7 +64,7 @@ These are experimental and not part of the v0.1 READY path.
 READY is a snapshot verdict: supported format, state-verified constraints, state-verified effects, no unresolved critical assumptions.
 
 ## Known limitations
-- No Chainlink sequencer uptime feed for chain 4663 (G2 -> UNKNOWN).
+- No Chainlink sequencer uptime feed for chain 4663 (G2 -> UNKNOWN). Under strict mode, READY is unreachable on mainnet without a supported sequencer source.
 - Pool landscape not fully surveyed on-chain.
 - USDG is treated as declared-peg unless policy allows oracle basis.
 
