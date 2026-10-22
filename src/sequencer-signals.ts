@@ -10,3 +10,7 @@ export function computeHeaderGaps(blocks: { timestamp: number }[]): { maxGapSec:
 export function headLagSec(blockTimestamp: number, captureUnix: number): number {
   return captureUnix - blockTimestamp;
 }
+
+export function degradedPass(signals: { maxGapSec: number; headLagSec: number }, thresholds: { maxGapSec: number; maxHeadLagSec: number }): boolean {
+  return signals.maxGapSec <= thresholds.maxGapSec && signals.headLagSec <= thresholds.maxHeadLagSec;
+}
