@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { canonicalize } from './canonical';
 import { verifyHashes } from './receipt';
 import { ReplaySource } from './evidence';
 import { assess } from './assess';
@@ -33,7 +35,12 @@ export async function verifyL3(receipt: any, rpcProvided: boolean, rpcUrl?: stri
   }
   let checked = 0;
   for (const it of items) {
-    try {
+  try {
+    const pp = receipt?.assessment?.policyProvenance;
+    if (pp?.operatorPolicyHash) {
+      const computed = createHash('sha256').update(canonicalize(receipt.inputs.policy)).digest('hex');
+      if (computed !== pp.operatorPolicyHash) return { level: 2, result: 'FAIL' };
+    }
       const res = await fetch(rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: (it.request as any)?.method, params: (it.request as any)?.params }) });
       const json = await res.json();
       if (json?.error) return { level: 3, result: 'FAIL', checked, of: items.length };

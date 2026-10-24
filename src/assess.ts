@@ -81,6 +81,17 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
         ? decoded.recipient.toLowerCase() === String(input.action.account).toLowerCase()
         : Array.isArray(input.policy.allowedRecipients) && input.policy.allowedRecipients.map((x: string) => x.toLowerCase()).includes(decoded.recipient.toLowerCase()))
     : false;
+  let decodeMismatch = false;
+  const intent = input.action.intent;
+  if (intent && decoded) {
+    const tokenIn = decoded.zeroForOne ? decoded.poolKey.currency0 : decoded.poolKey.currency1;
+    const tokenOut = decoded.zeroForOne ? decoded.poolKey.currency1 : decoded.poolKey.currency0;
+    if (intent.tokenIn && String(intent.tokenIn).toLowerCase() !== tokenIn.toLowerCase()) decodeMismatch = true;
+    if (intent.tokenOut && String(intent.tokenOut).toLowerCase() !== tokenOut.toLowerCase()) decodeMismatch = true;
+    if (intent.minAmountOut !== undefined && BigInt(intent.minAmountOut) !== decoded.minAmountOut) decodeMismatch = true;
+    if (intent.recipient && String(intent.recipient).toLowerCase() !== (decoded.recipient ?? input.action.account).toLowerCase()) decodeMismatch = true;
+    if (intent.deadline !== undefined && Number(intent.deadline) !== decoded.deadline) decodeMismatch = true;
+  }
   const decodedTokens = decoded
     ? { tokenIn: decoded.zeroForOne ? decoded.poolKey.currency0 : decoded.poolKey.currency1,
         tokenOut: decoded.zeroForOne ? decoded.poolKey.currency1 : decoded.poolKey.currency0 }
@@ -98,6 +109,7 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
     tokenAllowed,
     recipientAllowed,
     minAmountOutZero: decoded ? decoded.minAmountOut === 0n : true,
+    decodeMismatch,
     deadlineSec: decoded?.deadline,
     maxDeadlineSec: input.policy.maxDeadlineSec,
     poolAllowed,
@@ -118,6 +130,8 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
     }
   }
 
+  const expected = ['G0_CONTEXT','G1_ASSET','G2_SEQUENCER','G3_ORACLE','G4_CORPORATE_ACTION','G5_ISSUER_SIGNALS','G6_VALUATION','G7_DECODE','G8_SIMULATION','G9_EXECUTION_QUALITY','G10_POLICY'];
+  for (const g of expected) { if (!gates.some((x: any) => x.gate === g)) throw new Error('INPUT_INCOMPLETE'); }
   const verdict = aggregate(gates, { decoderOk, g8Pass, unresolvedAssumptions });
   const assessment: any = {
     schema: 'rwa-preflight/assessment/v0.3',
