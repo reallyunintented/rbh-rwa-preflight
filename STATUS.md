@@ -23,3 +23,6 @@ Status entry above was temporarily overwritten; audit trail restored.
 - Reason set +3 codes (READY_INVARIANT_VIOLATED, SEQUENCER_GAP_DETECTED, SEQUENCER_DEGRADED_ASSURANCE), minor version bump per SPEC section 7 -> 0.4.0.
 - Tests added: g7 unit, verdict fail-closed normalization, L2 positive re-derivation, L2 mutation (gate flip + hash repair -> L1 PASS / L2 FAIL), L3 error rejection. 43 files / 93 tests green; lint + secret scan clean.
 - All remediation work is now committed (was previously uncommitted working-tree changes).
+- Open-items handoff for the next session: docs/OPEN-ITEMS.md (attack order: F-04
+  simulator → router codehash pinning → G10 remainder → F-14 schema validation →
+  centralize invariant → README honesty → Q hygiene).
