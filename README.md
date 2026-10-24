@@ -1,7 +1,7 @@
 # rwa-preflight
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-83%20passing-brightgreen)](#development)
+[![Tests](https://img.shields.io/badge/tests-143%20passing-brightgreen)](#development)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-blue)](#quick-start)
 
 **rwa-preflight tells an AI agent whether a concrete transaction involving Robinhood Chain Stock Tokens may be sent right now, and produces a self-contained, block-pinned, replayable and tamper-evident receipt.**
@@ -10,9 +10,14 @@
 AI agents can suggest trades, but they need a deterministic, verifiable pre-trade check before anything is sent. rwa-preflight provides that check without signing or sending anything.
 
 ## What it does
-- Pure gate functions for asset identity, oracle, corporate actions, issuer signals, valuation, decoding, simulation, execution quality, policy.
-- Receipt format (self-contained, block-pinned, replayable and tamper-evident) with L1/L2/L3 verification.
-- Simulation/registry probing and token allowlist wiring are in progress; assess() currently fails closed.
+- Pure gate functions G0–G12: asset identity, sequencer, oracle, corporate actions, issuer signals, valuation, decoding, simulation, execution quality, policy, lending, smart account.
+- Decode-and-verify path is live: Universal Router v4 decoding pinned to the on-chain codehash (probe-recorded, never hand-typed), intent cross-check (`DECODE_MISMATCH`), gate-set completeness in aggregation.
+- State-verified simulation: `eth_simulateV1` sequential reads (pre-state → swap → post-state); effects are claimed only when every read parses and state matches the decoded constraints. A verified revert is FAIL_HARD.
+- Self-contained, block-pinned, replayable and tamper-evident receipts with L1 (integrity), L2 (verdict re-derivation incl. policy provenance) and L3 (on-chain evidence replay with checked/of counts).
+- Fail-closed everywhere: unknown statuses, missing gates, unparseable reads or a missing READY invariant can never produce READY.
+
+## Current honesty status
+The decoded + simulated path runs end-to-end (G7/G8 live), but verdicts currently **cap below READY** by design: the G1/G5/G2/G9 gate inputs (registry probe, issuer signals, sequencer feed, mid-price) are fail-closed scaffolds awaiting real data. This is intentional, not a bug — see docs/REMAINING-PLAN.md.
 
 ## What it does not do
 - Does not sign or send transactions.
@@ -66,6 +71,9 @@ READY is a snapshot verdict: supported format, state-verified constraints, state
 ## Known limitations
 - No Chainlink sequencer uptime feed for chain 4663 (G2 -> UNKNOWN). Under strict mode, READY is unreachable on mainnet without a supported sequencer source.
 - Degraded assurance is experimental; thresholds require probe data.
+- The Universal Router v4 decoder layout is provisional until cross-checked against real swap calldata (chain-specific extra field per docs/CHAIN_FACTS.md O9); G9's fail-closed scaffolding keeps wrong decodes from reaching READY.
+- Native token effects are not verified by simulation; claim exactly what is checked.
+- Negative sequencer-lag signals are recorded (`headLagSignal`) but not yet wired into G2 details pending a real feed.
 - Pool landscape not fully surveyed on-chain.
 - USDG is treated as declared-peg unless policy allows oracle basis.
 
@@ -73,6 +81,7 @@ READY is a snapshot verdict: supported format, state-verified constraints, state
 ```bash
 pnpm test
 pnpm lint
+pnpm build
 pnpm secret-scan
 ```
 
@@ -81,8 +90,10 @@ pnpm secret-scan
 - [plan.md](plan.md)
 - [docs/CHAIN_FACTS.md](docs/CHAIN_FACTS.md)
 - [docs/DECISIONS.md](docs/DECISIONS.md)
+- [docs/REMAINING-PLAN.md](docs/REMAINING-PLAN.md)
+- [docs/VERIFICATION-HANDOFF.md](docs/VERIFICATION-HANDOFF.md) — standing verify-by-execution process
+- [docs/HANDOFF_SESSION.md](docs/HANDOFF_SESSION.md)
 - [STATUS.md](STATUS.md)
 
 ## License
 MIT. See [LICENSE](LICENSE).
-EOF
