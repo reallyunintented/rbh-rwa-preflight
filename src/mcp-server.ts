@@ -4,6 +4,7 @@ import { validateTightening } from './policy-tighten';
 import { buildMeterSnapshot } from './meter';
 import { verify } from './verify';
 import { MCP_TOOLS } from './mcp';
+import { redactText } from './redact';
 
 process.stdin.setEncoding('utf8');
 let buf = '';
@@ -31,6 +32,6 @@ process.stdin.on('end', async () => {
       process.stdout.write(JSON.stringify({ error: 'unknown method' }) + '\n');
     }
   } catch (e: any) {
-    process.stdout.write(JSON.stringify({ error: e?.message }) + '\n');
+    process.stdout.write(JSON.stringify({ error: redactText(String(e?.message ?? e)) }) + '\n');
   }
 });

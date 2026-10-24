@@ -8,6 +8,14 @@ describe('verdict', () => {
     expect(aggregate([{ status: 'FAIL_TRANSIENT' }])).toBe('DEFER');
     expect(aggregate([{ status: 'PASS' }])).toBe('READY');
   });
+
+  it('fail-closed normalization (AUDIT F-01)', () => {
+    expect(aggregate([{ status: 'PASS ' }])).toBe('HUMAN_REVIEW'); // typo'd status
+    expect(aggregate([{ status: 'pass' }])).toBe('HUMAN_REVIEW');
+    expect(aggregate([{ status: 'SKIPPED' }])).toBe('HUMAN_REVIEW');
+    expect(aggregate([{ status: undefined as any }])).toBe('HUMAN_REVIEW');
+    expect(aggregate([])).toBe('HUMAN_REVIEW'); // no gates is never READY
+  });
 });
 
 describe('ready invariant', () => {
