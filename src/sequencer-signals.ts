@@ -12,6 +12,11 @@ export function headLagSec(blockTimestamp: number, captureUnix: number): number 
   return lag < 0 ? 0 : lag;
 }
 
+export function headLagSignal(blockTimestamp: number, captureUnix: number): { lagSec: number; negative: boolean } {
+  const lag = captureUnix - blockTimestamp;
+  return { lagSec: lag < 0 ? 0 : lag, negative: lag < 0 };
+}
+
 export function degradedPass(signals: { maxGapSec: number; headLagSec: number }, thresholds: { maxGapSec: number; maxHeadLagSec: number }): boolean {
   return signals.maxGapSec <= thresholds.maxGapSec && signals.headLagSec <= thresholds.maxHeadLagSec;
 }
