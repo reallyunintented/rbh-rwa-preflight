@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { verify } from './verify';
 import { assess } from './assess';
 import { loadOperatorPolicy } from './policy-loader';
+import { redactText } from './redact';
 
 (async () => {
   const args = process.argv.slice(2);
@@ -36,4 +37,6 @@ import { loadOperatorPolicy } from './policy-loader';
   } else {
     console.log('rwa-preflight: assess <input.json> [--policy-env ENV] | verify <receipt.json> [--policy-env ENV] | asset | registry');
   }
-})();
+})().catch((e: any) => {
+  console.log(JSON.stringify({ error: redactText(String(e?.message ?? e)) }));
+});
