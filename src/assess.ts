@@ -1,5 +1,6 @@
 import { LiveSource, type EvidenceSource } from './evidence';
 import type { Hex } from './types';
+import { intentDecodeMismatch } from './intent';
 import { buildReceipt } from './receipt';
 import { g0Context } from './gates/g0';
 import { g1Asset } from './gates/g1';
@@ -81,17 +82,17 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
         ? decoded.recipient.toLowerCase() === String(input.action.account).toLowerCase()
         : Array.isArray(input.policy.allowedRecipients) && input.policy.allowedRecipients.map((x: string) => x.toLowerCase()).includes(decoded.recipient.toLowerCase()))
     : false;
-  let decodeMismatch = false;
-  const intent = input.action.intent;
-  if (intent && decoded) {
-    const tokenIn = decoded.zeroForOne ? decoded.poolKey.currency0 : decoded.poolKey.currency1;
-    const tokenOut = decoded.zeroForOne ? decoded.poolKey.currency1 : decoded.poolKey.currency0;
-    if (intent.tokenIn && String(intent.tokenIn).toLowerCase() !== tokenIn.toLowerCase()) decodeMismatch = true;
-    if (intent.tokenOut && String(intent.tokenOut).toLowerCase() !== tokenOut.toLowerCase()) decodeMismatch = true;
-    if (intent.minAmountOut !== undefined && BigInt(intent.minAmountOut) !== decoded.minAmountOut) decodeMismatch = true;
-    if (intent.recipient && String(intent.recipient).toLowerCase() !== (decoded.recipient ?? input.action.account).toLowerCase()) decodeMismatch = true;
-    if (intent.deadline !== undefined && Number(intent.deadline) !== decoded.deadline) decodeMismatch = true;
-  }
+  const decodeMismatch = intentDecodeMismatch(
+    input.action.intent as Record<string, unknown> | undefined,
+    decoded
+      ? ({ tokenIn: decoded.zeroForOne ? decoded.poolKey.currency0 : decoded.poolKey.currency1,
+           tokenOut: decoded.zeroForOne ? decoded.poolKey.currency1 : decoded.poolKey.currency0,
+           recipient: (decoded as any).recipient ?? null,
+           minAmountOut: (decoded as any).minAmountOut as bigint | undefined,
+           deadline: (decoded as any).deadline } as any)
+      : null,
+    String(input.action.account),
+  );
   const decodedTokens = decoded
     ? { tokenIn: decoded.zeroForOne ? decoded.poolKey.currency0 : decoded.poolKey.currency1,
         tokenOut: decoded.zeroForOne ? decoded.poolKey.currency1 : decoded.poolKey.currency0 }
