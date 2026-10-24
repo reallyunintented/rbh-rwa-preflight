@@ -30,7 +30,7 @@ Date: 2026-10-21. Chain: Robinhood Chain mainnet, chain id 4663.
 | O6 | VERIFIED | latest/safe/finalized map to different blocks (safe/finalized lag latest); default pinBlockTag recommend 'latest' for soft? Decision pending. | RPC probe |
 | O7 | VERIFIED | USDG has Chainlink feed USDG/USD (proxy 0x61B7...). | Chainlink directory |
 | O8 | VERIFIED (partial) | REST unauthenticated; cache headers (CloudFront x-cache); timestamps generatedAt; no rate-limit headers observed. | live probe |
-| O9 | VERIFIED | Universal Router 0x8876789976dEcBfCbBbe364623C63652db8C0904 (v2.1.1); extra field minHopPriceX36 per third party. Permit2 canonical. | Uniswap docs + on-chain codehash |
+| O9 | VERIFIED (updated 2026-10-24) | Universal Router `0x8876789976dEcBfCbBbe364623C63652db8C0904`; on-chain codehash at block 0x5c36f13 = `0x81a21b06c8abfca60ce9c06385384685722d9644e833031ee276711b82beea84` (docs/probes/router-codehash-probe.json). Caveat still open: chain-specific extra swap-struct field (`minHopPriceX36`, per third party) — verify decoder layout against real calldata before trusting decoded min-out semantics. Permit2 canonical. | Uniswap docs + eth_getCode probe (2026-10-24) |
 | O10 | ASSUMED | NYSE holiday calendar not yet sourced; tradingCapabilities from /assets. | - |
 | O11 | VERIFIED (partial) | Confirmed pause flags: paused(), oraclePaused(). No other pause selectors responded. | on-chain probe |
 | O12 | VERIFIED (partial) | Pool landscape not surveyed on-chain; third party reports many pools/extreme fees. | docs only |

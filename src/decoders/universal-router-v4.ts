@@ -3,6 +3,10 @@ import type { Address, Hex } from '../types.js';
 
 export const DECODER_ID = 'universal-router-v4-exact-in-single';
 export const V4_SWAP_COMMAND = 0x10;
+// Sourced from docs/probes/router-codehash-probe.json (eth_getCode at pinned block,
+// captured 2026-10-24); address recorded in docs/CHAIN_FACTS.md fact O9.
+export const UNIVERSAL_ROUTER_ADDRESS = '0x8876789976dEcBfCbBbe364623C63652db8C0904' as const;
+export const UNIVERSAL_ROUTER_CODEHASH = '0x81a21b06c8abfca60ce9c06385384685722d9644e833031ee276711b82beea84' as const;
 
 export interface PoolKey {
   currency0: Address;

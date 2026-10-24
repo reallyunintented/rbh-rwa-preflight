@@ -1,4 +1,5 @@
 import { LiveSource, type EvidenceSource } from './evidence';
+import type { Hex } from './types';
 import { buildReceipt } from './receipt';
 import { g0Context } from './gates/g0';
 import { g1Asset } from './gates/g1';
@@ -18,7 +19,7 @@ import { aggregate, readyInvariant } from './verdict';
 import { PolicySchema } from './schemas';
 import pkg from '../package.json';
 import { keccak256, toHex } from 'viem';
-import { decodeUniversalRouterV4 } from './decoders/universal-router-v4';
+import { decodeUniversalRouterV4, UNIVERSAL_ROUTER_ADDRESS, UNIVERSAL_ROUTER_CODEHASH } from './decoders/universal-router-v4';
 import { runSimulation } from './simulator';
 
 export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; action: any; policy: any; }) {
@@ -38,8 +39,11 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
   const codeItem = await src.rpc('eth_getCode', [input.action.tx.to, blockNumber]);
   const bytecode = (codeItem.response as string) ?? '0x';
   const routerCodehash = bytecode && bytecode !== '0x' ? (keccak256(toHex(bytecode as `0x${string}`)) as any) : ('0x0' as any);
-  // No verified Universal Router v4 codehash is pinned in this repo; supported list empty => fail-closed.
-  const supportedCodehashes: any[] = [];
+  // Router codehash pinned via docs/probes/router-codehash-probe.json (VERIFIED at
+  // block 0x5c36f13, 2026-10-24). Unknown targets fail closed with CODEHASH_UNKNOWN.
+  // Caveat (O9): the v4 swap struct may carry a chain-specific field; treat decoded
+  // min-out semantics as provisional until cross-checked against real calldata.
+  const supportedCodehashes: Hex[] = [UNIVERSAL_ROUTER_CODEHASH];
 
   const decoderRes = decodeUniversalRouterV4({
     to: input.action.tx.to,
@@ -61,7 +65,7 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
   gates.push(g5Issuer({ halt: false, tradable: false, available: false, stale: true, multiplierMatch: false }));
   gates.push(g6Valuation({ quoteResolved: false }));
   gates.push(g7Decode({ decoderOk: decoderRes.ok, decoderReason: decoderRes.ok ? undefined : decoderRes.reason }));
-  const sim = await runSimulation(src as any, input.action.tx, { blockNumber, account: input.action.account });
+  const sim = await runSimulation(src as any, input.action.tx, { blockNumber, account: input.action.account, decoded: decoded ? { tokenIn: (decoded.zeroForOne ? decoded.poolKey.currency0 : decoded.poolKey.currency1), tokenOut: (decoded.zeroForOne ? decoded.poolKey.currency1 : decoded.poolKey.currency0), recipient: decoded.recipient ?? input.action.account, amountIn: decoded.amountIn, minAmountOut: decoded.minAmountOut } : null });
   gates.push(g8Simulation(sim));
   gates.push(g9ExecutionQuality({ deviationBps: 0, policyBps: 0, minOutImpliedOk: false }));
   if (input.action.lending) {
@@ -124,7 +128,7 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
     gates,
     guarantees: { enforced: [], advisory: [], notAssessed: ['eligibility'] },
     assumptions: [],
-    limitations: ['minimal assess implementation'],
+    limitations: ['minimal assess implementation', 'native token effects not verified by simulation'],
     hashes: { inputs: '', evidence: '', assessment: '' },
   };
   assessment.policyProvenance = (input as any).policyProvenance;

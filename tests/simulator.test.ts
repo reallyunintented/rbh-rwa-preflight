@@ -10,10 +10,10 @@ const src = {
   },
 };
 
-describe('runSimulation (AUDIT F-04 scaffold)', () => {
-  it('sends eth_simulateV1 at the PINNED block, from the real account', async () => {
+describe('runSimulation transport shape', () => {
+  it('revert-only mode (decoded null) sends eth_simulateV1 at the PINNED block, from the real account', async () => {
     recorded.length = 0;
-    await runSimulation(src as any, { to: '0xabc', data: '0x', value: '0x0' }, { blockNumber: '0x5a16b7b', account: '0x1111111111111111111111111111111111111111' });
+    await runSimulation(src as any, { to: '0x5511111111111111111111111111111111111111', data: '0x', value: '0x0' }, { blockNumber: '0x5a16b7b', account: '0x1111111111111111111111111111111111111111', decoded: null });
     expect(recorded.length).toBe(1);
     expect(recorded[0].method).toBe('eth_simulateV1');
     const [opts, blockTag] = recorded[0].params as [any, string];
@@ -29,7 +29,7 @@ describe('runSimulation (AUDIT F-04 scaffold)', () => {
 
   it('rpc error -> unavailable -> G8 UNKNOWN (fail closed)', async () => {
     const errSrc = { async rpc() { return { response: null, error: { message: 'x' } }; } };
-    const r = await runSimulation(errSrc as any, { to: '0xabc', data: '0x', value: '0x0' }, { blockNumber: '0x1', account: '0x1' });
+    const r = await runSimulation(errSrc as any, { to: '0x5511111111111111111111111111111111111111', data: '0x', value: '0x0' }, { blockNumber: '0x1', account: '0x1111111111111111111111111111111111111111', decoded: null });
     expect(g8Simulation(r).status).toBe('UNKNOWN');
   });
 });

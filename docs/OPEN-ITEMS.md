@@ -31,11 +31,19 @@ This file lists what is DONE (committed), what is OPEN, and the order to tackle 
 ## Open items, in attack order
 
 ### 1. F-04 — implement the G8 simulator (HIGH; blocks the README honesty fix)
-- Status: SCAFFOLD IN PLACE (as of 2026-10-24). `runSimulation()` sends
-  `eth_simulateV1` at the pinned block from the real account, and conservatively
-  always returns `UNAVAILABLE_SIMULATION` -> G8 UNKNOWN -> no READY. Fail-closed by
-  construction: state-diff parsing (balance/allowance read from simulated state)
-  is the remaining core work and is guarded by the S27/S28 fixtures below.
+- DONE 2026-10-24 (core effects verification implemented): `runSimulation()` performs
+  the M0-verified sequential-reads pattern on eth_simulateV1 — pre-state reads
+  (balances/allowance of the decoded in/out tokens for account and recipient), the
+  swap call, then identical post-state reads. Effects are claimed ONLY when all
+  reads parse as full 32-byte words; `available:true` requires state verification,
+  never a response-shape heuristic (a falsy/short value degrades to UNAVAILABLE).
+  Constraints claimed vs decoded calldata: tokenIn outflow in (0, amountIn],
+  tokenOut inflow >= minAmountOut to the decoded recipient, zero other in-scope
+  balance/allowance changes. Revert detection is honest even without decoded tokens.
+  g8 checks a verified revert (FAIL_HARD) before availability (UNKNOWN).
+  Tests: tests/simulator-effects.test.ts (10 cases incl. the truthy-field fence).
+- Still open: native token effects (listed as limitation); Permit2-specific reads;
+  live-chain fixture validation once a real swap calldata sample is available.
 - Do:
   - Implement the simulator per the M0-verified pattern: simulate the tx from
     `account` at the pinned block, then read state in the simulated state
@@ -50,20 +58,15 @@ This file lists what is DONE (committed), what is OPEN, and the order to tackle 
   outside a real simulation result.
 
 ### 2. Router codehash pinning (HIGH; unblocks G7 to ever PASS)
-- Today `supportedCodehashes` is empty in `assess.ts:35`, so every decode is
-  `CODEHASH_UNKNOWN` → verdicts HUMAN_REVIEW/UNKNOWN forever (intentional, safe).
-- Do (tests-first, M0-style):
-  - `scripts/probe-router.ts` (or extend probe-rpc): `eth_getCode` the Universal
-    Router at `0x8876789976dEcBfCbBbe364623C63652db8C0904` at a pinned block,
-    keccak the code, save a redacted probe JSON (host only) in `docs/probes/`,
-    record in `docs/CHAIN_FACTS.md` as VERIFIED with block + date.
-  - Wire the verified constant into the decoder's supported list. Template:
-    `src/decoders/swap-router02.ts:5-6` (its constant is already verified by
-    `docs/probes/swap-router02-codehash.json`).
-  - Decide (human) whether SwapRouter02 becomes a second supported decoder — it is
-    currently unused dead code.
-- Accept: an honest supported-format decode can reach G7 PASS (still needs F-04
-  for READY).
+- DONE 2026-10-24: `scripts/probe-router.ts` stores address + codehash + pinned block
+  (`docs/probes/router-codehash-probe.json`, eth_getCode at 0x5c36f13, 2026-10-24),
+  `docs/CHAIN_FACTS.md` O9 updated, and `src/assess.ts` wires
+  `supportedCodehashes = [UNIVERSAL_ROUTER_CODEHASH]` with the constant-generation
+  source recorded. Regression guard: tests/router-probe.test.ts ties the src
+  constants to the probe files (no hand-typed drift).
+- Still open: verify the decoder layout against REAL on-chain swap calldata (the
+  chain-specific extra field per O9; decoded min-out semantics stay provisional until
+  then). G9's fail-closed scaffolding keeps wrong decodes from reaching READY.
 
 ### 3. F-05 remainder — finish G10 + decode-policy checks (MEDIUM)
 - Updated 2026-10-24: DONE for the gate itself. `g10Policy` now checks
