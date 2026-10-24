@@ -1,10 +1,25 @@
 # STATUS.md
 
 Milestone: M8/M9 + A1/A2/A3a + Track C MM1-MM3 complete; v0.4.0 audit-remediation; READY-path inputs live through G7/G8, verdicts cap below READY by honest scaffolds
-Last green commit: HEAD (51 files / 136 tests; lint + build + secret scan clean)
+Last green commit: HEAD (56 files / 143 tests; lint + build + secret scan clean; final cf8a3dc/a204123 audit)
 Open questions: sequencer uptime feed absent for 4663; A3b degraded PASS pending human decision; M6 outreach pending; UR decoder layout vs real calldata (O9).
 Decisions: D1-D7 accepted; scope expansion authorized. External commit a63c38a audited + fixed-forward.
 Next 3 actions: verify/close cf8a3dc debts (see docs/VERIFICATION-HANDOFF.md section 3, Attempt 3) -> docs sync with cf8a3dc truth -> UR decoder live-fixture validation (O9).
+
+## 2026-10-24: a204123 verified; full coherence pass across standing docs
+- External commit a204123 ("verification follow-up") audited claim-by-claim and
+  ACCEPTED: Q-06 guard now runs a real assess()-built receipt (was vacuous);
+  headLagSignal fenced (wiring into G2 still correctly pending real feed);
+  assess golden checks full gate set + receipt shape; L3 fence adds the verify()
+  pass-through at level 3; npm audit RECORDED and LIVE-VERIFIED — re-run at this
+  head reproduces every number (15 vulns; 1L/9M/2H/3C; GHSA-9jrq-w75r-8gcw;
+  dev chain only; DECISIONS.md Q-08).
+- Coherence fixes committed: stale 51/136 counts -> 56/143 in STATUS header,
+  HANDOFF_SESSION (HEAD hash now a204123), OPEN-ITEMS; REMAINING-PLAN section 5
+  reflects closed vs pending-with-data; VERIFICATION-HANDOFF Attempt 3 ledger
+  shows debts closed with residual LOW niceties marked as such.
+- Final gates at this head: 56 files / 143 tests green; lint (tsc+eslint), build,
+  secret scan all clean. Docs-only commit.
 
 ## 2026-10-24: VERIFICATION-HANDOFF created (docs/VERIFICATION-HANDOFF.md)
 Standing verification process for this repo, prompted by three recorded

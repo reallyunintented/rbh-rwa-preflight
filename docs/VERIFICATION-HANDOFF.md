@@ -84,15 +84,20 @@ any new session: re-run the proof column quickly (10 min), then work the queue.
 | L2 provenance runs at default levels | Proven `dc87c2b` | `pnpm vitest run tests/verify-provenance.test.ts` (mismatch FAIL under default `[1,2]`; matching PASS; broken inputs FAIL) |
 | 51 files / 136 tests green | Proven at `e001f93` | run `pnpm test` |
 
-### Attempt 3 — cf8a3dc (external), OPEN VERIFICATION DEBTS
-| Claim | Status | Debt to close |
+### Attempt 3 — cf8a3dc (external), debts CLOSED by a204123 (verified 2026-10-24)
+| Claim | Was | Now |
 |---|---|---|
-| Meter no-NORMAL fence | Real, keep | `pnpm vitest run tests/meter-no-normal.test.ts` |
-| L3 checked/of fence | Shallow, weak | Strengthen: must exercise CLI/MCP verify OUTPUT (spawn CLI against a receipt with evidence and grep `checked`/`of` in stdout; or direct `verify()` call) |
-| Q-06 money-number guard | VACUOUS | Replace/strengthen: run the checker over a REAL receipt built by `assess()` with the standard stub source (see tests/verify-l2-positive.test.ts), not a hand-made number-free one |
-| headLagSignal (Q-05) | DEAD CODE | tests-first: negative input produces `{negative:true}`, zero clamp silent; AND wire the flag into G2 details when a real feed lands (assess g2Sequencer still scaffolded) |
-| assess golden (SPEC §11) | Shallow | Replace with a shape/snapshot check of a full real receipt (gates count, reason vocabulary, receipt fields) |
-| npm audit "recorded" | FALSE | Run `pnpm audit` (network permitting); record output summary in `docs/DECISIONS.md`; if offline, record SKIPPED honestly |
+| Meter no-NORMAL fence | Real, kept | UNCHANGED, passes at head |
+| L3 checked/of fence | Shallow (only FAIL shape) | Strengthened: `verify()` pass-through at level 3 fenced. Residual nicety: CLI-process-output variant (spawn CLI, grep stdout) — LOW |
+| Q-06 money-number guard | VACUOUS (hand-made number-free inputs) | FIXED: checker path-tracks a REAL assess()-built receipt; passed, meaning the receipt pipeline emits no money numbers |
+| headLagSignal (Q-05) | DEAD CODE, untested | Tested (negative detected, no silent clamp). Wiring into G2 remains intentionally PENDING the real feed (per plan; wiring before data would itself be dead code) |
+| assess golden (SPEC §11) | 2 assertions | Improved: full gate-set count + receipt shape. Residual nicety: reason-vocabulary check — LOW |
+| npm audit "recorded" | NOT recorded | CLOSED: docs/DECISIONS.md Q-08 entry; live re-run matched every recorded number (15 vulns; 1L/9M/2H/3C; GHSA-9jrq-w75r-8gcw; dev chain only) |
+
+Kill-test/hardening note: a204123's tests were verified green at head but were not
+red-tested (nothing changed in src to make them red); accept: fences over real
+receipt paths (Q-06) need no src change to be meaningful, but future fence authors
+should state the failure mode they fence against in a comment (Q-06 lacks it).
 
 ## 4. Standing quality bar (what counts as DONE here)
 
@@ -108,15 +113,15 @@ any new session: re-run the proof column quickly (10 min), then work the queue.
 
 ## 5. Verifier's current work queue
 
-1. Close the six pf8a3dc debts in section 3 (three are strengthening tests; two are
-   new tests/wiring; one is a recorded artifact).
-2. Update `docs/REMAINING-PLAN.md` + `docs/OPEN-ITEMS.md` + `STATUS.md` with the
-   verified truth of cf8a3dc (currently stale: those docs still mark the items
-   open even where genuinely done, and don't record the three gaps).
-3. Then the substantive top item: UR decoder live-fixture validation (O9) — scan
-   recent blocks for real UR swap calldata, redacted fixture, decoder asserted.
+1. Section 3 Attempt 3 debts are CLOSED and re-proven (a204123); only LOW niceties
+   remain (CLI-output L3 fence, golden reason-vocab, fence-failure-mode comments).
+2. Docs synced with the a204123 truth (this pass). REMAINING-PLAN section 5 now
+   reflects closed vs pending-with-data items.
+3. Top substantive item: UR decoder live-fixture validation (O9) — scan recent
+   blocks for real UR swap calldata, redacted fixture, decoder asserted.
 4. Human-decision block stays quarantined: A3b semantics, SwapRouter02
    promote-or-delete, O10 calendar, README re-upgrade, outreach.
+5. Standing rule: any future external commit gets the section-1 recipe on arrival.
 
 ## 6. Command cheat sheet
 

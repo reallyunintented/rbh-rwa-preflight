@@ -4,7 +4,7 @@ Refreshed from the stale M2-era version. Read after SPEC.md, plan.md, AGENTS.md.
 
 ## State of the repo (all verified by runs, not claims)
 
-- HEAD: `e001f93` — clean tree. Suite: **51 files / 136 tests green**; `pnpm lint`
+- HEAD: `a204123` — clean tree. Suite: **56 files / 143 tests green**; `pnpm lint`
   (tsc + eslint), `pnpm build`, `pnpm secret-scan` all clean at head.
 - Version v0.4.0. Deps pinned + lockfile synced (viem 2.57.7, zod 4.6.7, tsx 4.23.15,
   typescript 5.9.3, vitest 2.1.9). pnpm has no deprecation warning (config migrated

@@ -46,18 +46,26 @@ Statuses marked VERIFIED reflect actual code state, not prior claims.
   stays open.
 
 ### 5. Small mechanical hygiene (batch)
-- Sequencer negative-lag signal (Q-05): record negative lag as a signal
-  (negativeLagSec) and flag in G2 details; fence test. Latent today (G2 signals are
-  scaffolded in assess) but cheap to land properly.
-- Money-number guard test (Q-06): no money `number` in receipt fields; bigint or
-  decimal strings only.
+- Sequencer negative-lag signal (Q-05): signal + tests DONE (a204123:
+  `headLagSignal` fenced, negative detected, no silent clamp). REMAINING: wire the
+  flag into G2 details the moment a real sequencer feed lands (G2 signals are
+  scaffolded in assess; wiring before data would be dead code by design).
+- Money-number guard test (Q-06): DONE + strengthened (a204123) — checker now runs
+  over a REAL assess()-built receipt with path tracking, not hand-made inputs.
 - onlyBuiltDependencies: DONE 2026-10-24 — a63c38a had deleted the esbuild allowlist
   while leaving the ignored `pnpm.onlyBuiltDependencies` field in package.json
   (backwards); fixed: field removed from package.json, `esbuild` allowlist restored
   in pnpm-workspace.yaml. Deprecation warning verified gone (`pnpm install
   --frozen-lockfile`, zero matches on "no longer read").
-- Fence tests that remain: L3 checked/of in CLI/MCP output; meter no-NORMAL labels;
-  npm audit (Q-08, network permitting); CLI assess golden test (SPEC section 11).
+- Fence tests: meter no-NORMAL DONE (real, kept); L3 checked/of — verify()
+  pass-through fenced (a204123), the CLI-output variant remains a nicety (LOW).
+- npm audit (Q-08): DONE 2026-10-24 — 15 vulnerabilities, 1 low / 9 moderate /
+  2 high / 3 critical, ALL in the dev chain (vitest > vite-node > vite,
+  GHSA-9jrq-w75r-8gcw); production deps clean. Live re-run at a204123 matches the
+  recorded numbers exactly (docs/DECISIONS.md, Q-08 entry). Decision: defer vitest
+  upgrade, track upstream.
+- CLI assess golden: improved (a204123: full gate set + receipt shape); the reason
+  vocabulary check is still a nicety (LOW).
 
 ### 6. UR decoder live-fixture validation (O9 caveat) — HIGH-VALUE, was missing
 - The decoded swap-struct layout (chain-specific extra field per O9, decoded min-out
