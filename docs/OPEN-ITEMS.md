@@ -31,9 +31,11 @@ This file lists what is DONE (committed), what is OPEN, and the order to tackle 
 ## Open items, in attack order
 
 ### 1. F-04 — implement the G8 simulator (HIGH; blocks the README honesty fix)
-- Status: `src/simulator.ts` is an interface only; no `eth_simulateV1` code exists
-  (grep-verified). The M0 probe (note.md) confirms the method and state-exposure
-  pattern work on the production RPC.
+- Status: SCAFFOLD IN PLACE (as of 2026-10-24). `runSimulation()` sends
+  `eth_simulateV1` at the pinned block from the real account, and conservatively
+  always returns `UNAVAILABLE_SIMULATION` -> G8 UNKNOWN -> no READY. Fail-closed by
+  construction: state-diff parsing (balance/allowance read from simulated state)
+  is the remaining core work and is guarded by the S27/S28 fixtures below.
 - Do:
   - Implement the simulator per the M0-verified pattern: simulate the tx from
     `account` at the pinned block, then read state in the simulated state
@@ -64,27 +66,28 @@ This file lists what is DONE (committed), what is OPEN, and the order to tackle 
   for READY).
 
 ### 3. F-05 remainder — finish G10 + decode-policy checks (MEDIUM)
-- `assess.ts:73` hardcodes `tokenAllowed: false` (fail-closed but blocks everything);
-  wire the registry/allowTokens. Reason codes that exist but are never emitted:
-  - `DEADLINE_MISSING/TOO_FAR` (UR 2-arg execute yields deadline 0 → map it; check
-    `maxDeadlineSec` on the DECODED deadline).
-  - `DECODE_MISMATCH` (intent cross-check, scenario S22).
-  - `POOL_NOT_ALLOWED` / `POOL_FEE_EXCEEDS_POLICY` (decoded poolKey vs policy, S26).
-  - `NOTIONAL_EXCEEDS_POLICY` (S19; also missing from `PolicySchema`).
-- Tests first: gate-level + assess-wiring-level for s22/s26/s19.
+- Updated 2026-10-24: DONE for the gate itself. `g10Policy` now checks
+  DEADLINE_MISSING/DEADLINE_TOO_FAR, POOL_NOT_ALLOWED, POOL_FEE_EXCEEDS_POLICY,
+  NOTIONAL_EXCEEDS_POLICY, and assess() derives tokenIn/tokenOut from the decoded
+  poolKey + zeroForOne vs policy.allowTokens (fail-closed when no allowlist), pool
+  and notional checks when the policy configures them. Tests: tests/g10-extended.test.ts.
+- Still open: intent cross-check (`DECODE_MISMATCH`, S22) and POOL default derivation
+  from registry.
 
 ### 4. F-14 — schema-validate inputs at the boundaries (MEDIUM)
-- `assess.ts` takes `policy: any`; MCP spreads `req.params` raw; `PolicySchema`
-  (`src/schemas.ts`) is dead code; `maxNotionalQuote` missing from the schema.
-- Do: validate policy + action with zod at assess/MCP/CLI boundaries; reject
-  unknown/missing critical fields fail-closed (`INPUT_INCOMPLETE`), no silent
-  defaults. Tests first (string numbers, missing fields → clean rejection).
+- Updated 2026-10-24: policy is validated via `PolicySchema.safeParse` at assess
+  (throws INPUT_INCOMPLETE); `maxNotionalQuote` added to the schema. MCP inherits
+  the validation through assess.
+- Still open: validate `action` (kind/chainId/account/tx shape) and reject unknown
+  policy keys (zod strips unknown keys by default today).
 
 ### 5. F-02 remainder — centralize the READY invariant in aggregate (MEDIUM)
-- Extend `aggregate()` to take `{decoderOk, g8Pass, unresolvedAssumptions}` (default
-  false ⇒ never READY) rather than relying on assess() injecting an UNKNOWN gate;
-  update callers + s36-s38 tests. Also gate-set completeness: an absent expected
-  G0..G10 gate must not count as passing.
+- DONE (2026-10-24): `aggregate(gates, inv)` REQUIRES the invariant; without it
+  (decoder not ok / G8 not PASS / unresolved assumptions) the verdict is
+  HUMAN_REVIEW even with all-PASS gates. The assess-side UNKNOWN-gate injection
+  remains as a second guard. Tests: tests/verdict.test.ts.
+- Still open: gate-set completeness — an absent expected G0..G10 gate must not
+  count as passing (assess should assert the full gate set explicitly).
 
 ### 6. F-08 — README honesty (MEDIUM; do after items 1-2 land, start now)
 - README claims "state-verified effects" and reachable READY; true only after
@@ -94,9 +97,14 @@ This file lists what is DONE (committed), what is OPEN, and the order to tackle 
   until the simulator lands.
 
 ### 7. Q-series hygiene (LOW; batch at leisure)
-- Pin dependencies exactly (viem, zod, eslint, tsx, vitest — SPEC section 12 wants
-  pins; all are caret ranges now).
-- `assess.ts:104` `libraryVersion: '0.0.0'` → read from package.json.
+- DONE 2026-10-24: dependencies pinned to actually-resolved versions (viem 2.57.7,
+  zod 4.6.7, tsx 4.23.15, typescript 5.9.3, vitest 2.1.9, @types/node 22.20.5,
+  eslint 10.13.0) and pnpm-lock.yaml synced (`pnpm install --frozen-lockfile`
+  passes). `libraryVersion` now read from package.json.
+- Note: pnpm 12 warns that the `pnpm.onlyBuiltDependencies` field in package.json
+  is no longer read; migrate to pnpm-workspace.yaml during hygiene.
+- `assess.ts` `libraryVersion` already read from package.json (done); meter.ts edits
+  still open below.
 - meter.ts: `Sourced` labels hardcoded NORMAL/ageSec 0 → default NOT_ASSESSED
   until real sources exist (Q-04); meter-api.ts serves synthetic data under
   chain 4663 — mark it demo/synthetic loudly.
