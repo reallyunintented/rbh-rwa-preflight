@@ -2,12 +2,19 @@ import type { GateStatus, Verdict } from './types.js';
 
 const KNOWN_STATUSES: ReadonlySet<string> = new Set<GateStatus>(['PASS', 'FAIL_HARD', 'FAIL_TRANSIENT', 'UNKNOWN', 'NOT_APPLICABLE']);
 
-export function aggregate(gates: { status: string }[], inv: { decoderOk: boolean; g8Pass: boolean; unresolvedAssumptions: number; }): Verdict {
+export function aggregate(
+  gates: { status: string; gate?: string }[],
+  inv: { decoderOk: boolean; g8Pass: boolean; unresolvedAssumptions: number },
+  expectedGateIds?: readonly string[],
+): Verdict {
   if (gates.some((g) => !KNOWN_STATUSES.has(g.status))) return 'HUMAN_REVIEW';
   if (gates.some((g) => g.status === 'FAIL_HARD')) return 'BLOCKED';
   if (gates.some((g) => g.status === 'UNKNOWN')) return 'HUMAN_REVIEW';
   if (gates.some((g) => g.status === 'FAIL_TRANSIENT')) return 'DEFER';
   if (gates.length === 0) return 'HUMAN_REVIEW';
+  // Gate-set completeness (F-02 remainder): when the caller declares the expected
+  // gate set, an absent or typo'd gate id must never count as passing.
+  if (expectedGateIds && expectedGateIds.some((id) => !gates.some((g) => g.gate === id))) return 'HUMAN_REVIEW';
   // READY invariant is mandatory: no READY without decoder + state-verified effects + resolved assumptions.
   if (!readyInvariant(inv)) return 'HUMAN_REVIEW';
   return 'READY';

@@ -133,7 +133,7 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
 
   const expected = ['G0_CONTEXT','G1_ASSET','G2_SEQUENCER','G3_ORACLE','G4_CORPORATE_ACTION','G5_ISSUER_SIGNALS','G6_VALUATION','G7_DECODE','G8_SIMULATION','G9_EXECUTION_QUALITY','G10_POLICY'];
   for (const g of expected) { if (!gates.some((x: any) => x.gate === g)) throw new Error('INPUT_INCOMPLETE'); }
-  const verdict = aggregate(gates, { decoderOk, g8Pass, unresolvedAssumptions });
+  const verdict = aggregate(gates, { decoderOk, g8Pass, unresolvedAssumptions }, expected);
   const assessment: any = {
     schema: 'rwa-preflight/assessment/v0.3',
     verdict,
