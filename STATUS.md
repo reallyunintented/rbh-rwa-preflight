@@ -1,10 +1,34 @@
 # STATUS.md
 
-Milestone: M8/M9 + A1/A2/A3a + Track C MM1-MM3 complete; v0.4.0 audit-remediation + verify hardening
-Last green commit: HEAD (audit remediation a157473 + verify hardening follow-up); see git log
+Milestone: M8/M9 + A1/A2/A3a + Track C MM1-MM3 complete; v0.4.0 audit-remediation; READY-path inputs activated
+Last green commit: HEAD (all work committed; see git log)
 Open questions: sequencer uptime feed absent for 4663; A3b degraded PASS pending human decision; M6 outreach pending.
 Decisions: D1-D7 accepted; scope expansion authorized.
-Next 3 actions: OPEN-ITEMS.md item 2 (router codehash pinning) -> item 1 core (state-diff parsing) -> F-08 README re-upgrade only after 1+2.
+Next 3 actions: OPEN-ITEMS hygiene remainder (intent cross-check, gate-set completeness, action shape validation, onlyBuiltDependencies migration, npm audit) -> F-08 README re-upgrade check -> Track D outreach.
+
+## 2026-10-24: Hygiene commit 033b10f verified; fixes applied on top (8a93243, 12ab60d, 3b03a73)
+Commit 033b10f claimed "F-04 state-diff parsing" but contained a truthy-field shortcut:
+a response carrying a stateDiff-shaped field flipped `available:true` with zero effect
+checks (a READY risk once codehash pinning landed). The CLI redacted error catch had
+also been deleted (F-11 regression). Fixes committed:
+- F-04 REAL: runSimulation performs the M0-verified sequential-reads pattern —
+  pre-state reads, the swap, post-state reads. `available:true` ONLY when every read
+  parses as a full 32-byte word AND the state matches the decoded constraints
+  (tokenIn outflow in (0, amountIn], tokenOut inflow >= minAmountOut to the decoded
+  recipient, no other in-scope balance/allowance change). An unparseable read degrades
+  to UNAVAILABLE; a verified revert is G8 FAIL_HARD even when reads were unavailable.
+  Fence test locks the truthy-field shortcut out permanently.
+- F-11: CLI redacted top-level catch reinstated + S32 regression fence test.
+- OPEN-ITEMS item 2 DONE: probe-router emits the codehash; live probe captured the
+  Universal Router codehash at pinned block 0x5c36f13 (2026-10-24), wired as
+  UNIVERSAL_ROUTER_CODEHASH from docs/probes/router-codehash-probe.json;
+  CHAIN_FACTS O9 updated; tests/router-probe.test.ts ties src constants to probe
+  files (no hand-typed drift). Decoder layout caveat (O9 chain-specific field) stays
+  provisional; G9 scaffolding keeps wrong decodes failing closed.
+- Suite: 48 files / 117 tests green; lint + secret scan clean.
+- Engine status: decoded+simulated path is live through G7/G8, but verdicts still cap
+  below READY — G1/G5/G2/G9 gate inputs remain scaffolded falsy/UNKNOWN values
+  (intentional, honest; remaining scaffolds listed in docs/OPEN-ITEMS.md).
 
 ## 2026-10-24: Independent audit pass (docs/AUDIT-2026-10-24.md, serves as REVIEW-6)
 Read-only security + quality + product review of commit 901503f..5f3b8ba. Headline: unit gates
