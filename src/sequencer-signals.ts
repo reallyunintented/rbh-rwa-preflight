@@ -8,7 +8,8 @@ export function computeHeaderGaps(blocks: { timestamp: number }[]): { maxGapSec:
 }
 
 export function headLagSec(blockTimestamp: number, captureUnix: number): number {
-  return captureUnix - blockTimestamp;
+  const lag = captureUnix - blockTimestamp;
+  return lag < 0 ? 0 : lag;
 }
 
 export function degradedPass(signals: { maxGapSec: number; headLagSec: number }, thresholds: { maxGapSec: number; maxHeadLagSec: number }): boolean {

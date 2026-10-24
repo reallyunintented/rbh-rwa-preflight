@@ -66,10 +66,10 @@ export function buildMeterSnapshot(params: {
   }
   const mkSourced = <T>(value: T, source: string): Sourced<T> => ({
     value,
-    state: 'NORMAL',
+    state: 'NOT_ASSESSED',
     source,
     evidenceClass: 'onchain-reverifiable',
-    ageSec: 0,
+    ageSec: null,
     formulaId: 'v0.1',
   });
   const snapshot: MeterSnapshot = {

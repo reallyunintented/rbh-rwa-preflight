@@ -24,6 +24,8 @@ import { runSimulation } from './simulator';
 export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; action: any; policy: any; }) {
   const parsed = PolicySchema.safeParse(input.policy);
   if (!parsed.success) throw new Error('INPUT_INCOMPLETE');
+  const a = input.action;
+  if (!a || a.kind !== 'swap_exact_in' || !a.tx?.to || !a.tx?.data || a.tx?.value === undefined || !a.account || !a.chainId) throw new Error('INPUT_INCOMPLETE');
   const src = (input.source ?? new LiveSource(input.rpcUrl as string)) as EvidenceSource;
   const chainIdItem = await src.rpc('eth_chainId', []);
   const rpcChainId = parseInt(chainIdItem.response as string, 16);

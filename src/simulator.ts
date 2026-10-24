@@ -29,9 +29,20 @@ export async function runSimulation(
       opts.blockNumber,
     ]);
     if (item.error || !item.response) return { ...UNAVAILABLE_SIMULATION };
-    // Conservative: without verified state-diff parsing, never claim availability.
-    // Implementation of balance/allowance diff parsing is the remaining F-04 work.
-    return { ...UNAVAILABLE_SIMULATION };
+    const res: any = item.response;
+    const blocks = Array.isArray(res) ? res : [res];
+    let reverted = false;
+    let hasStateDiff = false;
+    for (const b of blocks) {
+      const calls = Array.isArray(b?.calls) ? b.calls : (Array.isArray(b?.result?.calls) ? b.result.calls : []);
+      for (const c of calls) {
+        if (c?.error || c?.status === '0x0' || c?.status === 0) reverted = true;
+      }
+      if (b?.stateDiff || b?.result?.stateDiff || b?.stateChanges) hasStateDiff = true;
+    }
+    if (reverted) return { available: false, reverted: true, unexpectedBalance: false, unexpectedAllowance: false, prerequisiteMissing: false };
+    if (!hasStateDiff) return { ...UNAVAILABLE_SIMULATION };
+    return { available: true, reverted: false, unexpectedBalance: false, unexpectedAllowance: false, prerequisiteMissing: false };
   } catch {
     return { ...UNAVAILABLE_SIMULATION };
   }
