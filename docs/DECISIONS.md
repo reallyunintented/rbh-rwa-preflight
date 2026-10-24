@@ -31,3 +31,6 @@ Decision: Move lending/collateral preflight and ERC-4337 smart-account support f
 
 ## A3b degraded assurance
 Decision: Enable experimental degraded-mode PASS with conservative thresholds; observe-only by default. Evidence: user authorization on 2026-10-22.
+
+## Q-08 npm audit (2026-10-24)
+Result: 15 vulnerabilities (1 low, 9 moderate, 2 high, 3 critical) in dev dependencies only (vitest/vite chain, GHSA-9jrq-w75r-8gcw). Production deps (viem 2.57.7, zod 4.6.7) clean. No production impact; dev-only. Decision: defer vitest upgrade until a compatible patched release; track upstream.

@@ -123,3 +123,6 @@ pinning), 7/8 hygiene.
 - Open-items handoff for the next session: docs/OPEN-ITEMS.md (attack order: F-04
   simulator → router codehash pinning → G10 remainder → F-14 schema validation →
   centralize invariant → README honesty → Q hygiene).
+
+## 2026-10-24: cf8a3dc verification follow-up
+Closed: L3 checked/of fence strengthened, money-number guard now runs over a real assess() receipt, headLagSignal tests added, assess golden shape check, npm audit recorded in DECISIONS.md. 143 tests green.
