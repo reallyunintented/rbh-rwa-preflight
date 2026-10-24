@@ -10,6 +10,18 @@ export function verifyL1(receipt: any): VerifyResult {
 }
 export async function verifyL2(receipt: any): Promise<VerifyResult> {
   if (!receipt?.inputs || !receipt?.evidence || !receipt?.assessment) return { level: 2, result: 'FAIL' };
+  // Provenance (tests-first fix-forward): when the receipt records an operator
+  // policy hash, it must match the policy actually used for the assessment.
+  // Present-but-broken inputs fail closed; no run label confusion (level stays 2).
+  try {
+    const pp = receipt?.assessment?.policyProvenance;
+    if (pp?.operatorPolicyHash) {
+      const computed = createHash('sha256').update(canonicalize(receipt?.inputs?.policy ?? null)).digest('hex');
+      if (computed !== pp.operatorPolicyHash) return { level: 2, result: 'FAIL' };
+    }
+  } catch {
+    return { level: 2, result: 'FAIL' };
+  }
   try {
     const src = new ReplaySource(receipt.evidence as any[]);
     const rebuilt = await assess({ source: src as any, action: receipt.inputs.action, policy: receipt.inputs.policy });
@@ -35,12 +47,7 @@ export async function verifyL3(receipt: any, rpcProvided: boolean, rpcUrl?: stri
   }
   let checked = 0;
   for (const it of items) {
-  try {
-    const pp = receipt?.assessment?.policyProvenance;
-    if (pp?.operatorPolicyHash) {
-      const computed = createHash('sha256').update(canonicalize(receipt.inputs.policy)).digest('hex');
-      if (computed !== pp.operatorPolicyHash) return { level: 2, result: 'FAIL' };
-    }
+    try {
       const res = await fetch(rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: (it.request as any)?.method, params: (it.request as any)?.params }) });
       const json = await res.json();
       if (json?.error) return { level: 3, result: 'FAIL', checked, of: items.length };
