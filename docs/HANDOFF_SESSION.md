@@ -12,6 +12,8 @@ Refreshed from the stale M2-era version. Read after SPEC.md, plan.md, AGENTS.md.
 - Authoritative docs: `docs/AUDIT-2026-10-24.md` (findings F-01..F-16, Q-series),
   `docs/OPEN-ITEMS.md` (done/open ledger), `docs/REMAINING-PLAN.md` (amended attack
   order, statuses updated), `docs/CHAIN_FACTS.md` (chain facts; O9 = router pin),
+  `docs/VERIFICATION-HANDOFF.md` (STANDING verify-before-trust process + claim
+  ledger with per-claim re-proof commands; read it before trusting ANY done claim),
   `STATUS.md` (full session trail incl. the a63c38a verification saga).
 
 ## Engine honesty snapshot

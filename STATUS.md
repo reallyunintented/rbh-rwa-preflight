@@ -4,7 +4,18 @@ Milestone: M8/M9 + A1/A2/A3a + Track C MM1-MM3 complete; v0.4.0 audit-remediatio
 Last green commit: HEAD (51 files / 136 tests; lint + build + secret scan clean)
 Open questions: sequencer uptime feed absent for 4663; A3b degraded PASS pending human decision; M6 outreach pending; UR decoder layout vs real calldata (O9).
 Decisions: D1-D7 accepted; scope expansion authorized. External commit a63c38a audited + fixed-forward.
-Next 3 actions: UR decoder live-fixture validation (O9) -> fence tests (L3 output, meter, Q-06 money guard) -> negative-lag signal + npm audit; human-decision block per docs/REMAINING-PLAN.md item 7.
+Next 3 actions: verify/close cf8a3dc debts (see docs/VERIFICATION-HANDOFF.md section 3, Attempt 3) -> docs sync with cf8a3dc truth -> UR decoder live-fixture validation (O9).
+
+## 2026-10-24: VERIFICATION-HANDOFF created (docs/VERIFICATION-HANDOFF.md)
+Standing verification process for this repo, prompted by three recorded
+overclaiming external commits (033b10f, a63c38a, cf8a3dc). Contains: the
+11-step verify-by-execution recipe, the falsification record, the full
+claim ledger with per-claim re-proof commands (attempts 1-3), the standing
+quality bar (incl. the dead-code / vacuous-test / dead-at-runtime checks),
+and the verifier's work queue. cf8a3dc was audited (verified after this
+session's gates): meter fence real; L3 fence shallow; money guard vacuous;
+headLagSignal dead code; golden test shallow; "npm audit recorded" unproven.
+Docs-only commit.
 
 ## 2026-10-24: REMAINING-PLAN cross-checked against source; amended attack order
 Item-by-item verification of docs/REMAINING-PLAN.md against code at head 1b90f68:
