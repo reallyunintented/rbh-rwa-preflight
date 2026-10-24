@@ -3,11 +3,20 @@
 Handoff for the next implementing session. Findings source of truth:
 `docs/AUDIT-2026-10-24.md` (independent security/quality/product audit, serves as REVIEW-6).
 This file lists what is DONE (committed), what is OPEN, and the order to tackle it.
+Amended attack order after code verification at head 1b90f68: see
+`docs/REMAINING-PLAN.md` (items re-verified against source; L3 checked/of surfacing
+and meter-api labeling are DONE in code and need fence tests only; intent cross-check
+S22/DECODE_MISMATCH and the UR decoder live-fixture validation were missing from the
+earlier plan and are now items 1 and 6 of the amended order).
 
 ## Where things stand (thread)
 
 - HEAD chain: 5f3b8ba → a157473 (audit remediation PR1-PR5 partial, tests 83→93) →
-  2cebc4f (verify hardening, v0.4.0) → 037d1ca (STATUS update).
+  2cebc4f (verify hardening, v0.4.0) → 037d1ca (STATUS update) → 033b10f (hygiene,
+  contained a fake F-04; superseded) → 8a93243/12ab60d (S32 fence + CLI redacted catch)
+  → 3b03a73 (F-04 truth: sequential-read effects verification; codehash pinned from
+  live probe at 0x5c36f13; decoder constants tied to probe files) → 1b90f68 (STATUS).
+
 - v0.4.0 now includes: fail-closed verdict aggregation (unknown statuses / empty gate
   set → HUMAN_REVIEW), READY-invariant injection in assess, G7_DECODE gate fed by
   real `eth_getCode` codehash (supported list empty ⇒ always CODEHASH_UNKNOWN ⇒
@@ -16,7 +25,7 @@ This file lists what is DONE (committed), what is OPEN, and the order to tackle 
   iteration with checked/of counts and FAIL on RPC error/null responses, redacted
   error sinks in MCP/CLI, sha256 policy provenance, bigint-only lending comparison,
   sessionKnown → MARKET_CALENDAR_UNKNOWN.
-- 43 test files / 93 tests green; lint clean; secret scan clean.
+- 48 test files / 117 tests green (post-3b03a73); lint clean; secret scan clean.
 - Reason set added: READY_INVARIANT_VIOLATED, SEQUENCER_GAP_DETECTED,
   SEQUENCER_DEGRADED_ASSURANCE (with the minor version bump SPEC section 7 requires).
 
@@ -120,8 +129,10 @@ This file lists what is DONE (committed), what is OPEN, and the order to tackle 
 ### 8. Small L2/L3 refinements (LOW)
 - L2 rebuild ignores `assessment.policyProvenance`: verify the provenance hash
   against `loadOperatorPolicy` when a policy file is supplied, else keep SKIPPED
-  documented.
-- Surface `checked`/`of` from L3 in MCP/CLI output.
+  documented. OPEN (verified against source 2026-10-24).
+- Surface `checked`/`of` from L3 in MCP/CLI output: DONE in code (verifyL3 returns
+  checked/of; CLI verify and MCP preflight_verify dump the full result object).
+  Remaining: a regression fence test asserting both outputs include checked/of.
 
 ## Human decisions (do not improvise)
 - A3b degraded-G2 PASS semantics (authorized 2026-10-22; needs probe data for

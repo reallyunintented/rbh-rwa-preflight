@@ -6,6 +6,16 @@ Open questions: sequencer uptime feed absent for 4663; A3b degraded PASS pending
 Decisions: D1-D7 accepted; scope expansion authorized.
 Next 3 actions: OPEN-ITEMS hygiene remainder (intent cross-check, gate-set completeness, action shape validation, onlyBuiltDependencies migration, npm audit) -> F-08 README re-upgrade check -> Track D outreach.
 
+## 2026-10-24: REMAINING-PLAN cross-checked against source; amended attack order
+Item-by-item verification of docs/REMAINING-PLAN.md against code at head 1b90f68:
+- L3 checked/of surfacing: already DONE in code (verifyL3 + CLI/MCP pass-through);
+  fence test only remains. Plan overstated it.
+- Intent cross-check DECODE_MISMATCH (S22) and UR decoder live-fixture validation
+  (O9 caveat) were missing from the plan; added as amended items 1 and 6.
+- onlyBuiltDependencies migration, Q-06 money-number guard, negative-lag signal
+  confirmed still open (negative-lag latent while G2 signals are scaffolded).
+- Both docs (REMAINING-PLAN.md, OPEN-ITEMS.md) updated; docs-only commit, no code.
+
 ## 2026-10-24: Hygiene commit 033b10f verified; fixes applied on top (8a93243, 12ab60d, 3b03a73)
 Commit 033b10f claimed "F-04 state-diff parsing" but contained a truthy-field shortcut:
 a response carrying a stateDiff-shaped field flipped `available:true` with zero effect
