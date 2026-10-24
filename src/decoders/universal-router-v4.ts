@@ -19,7 +19,7 @@ export interface DecodedUniversalRouterV4 {
   zeroForOne: boolean;
   amountIn: bigint;
   minAmountOut: bigint;
-  recipient: Address;
+  recipient: Address | null;
   deadline: number;
   commands: number[];
 }
@@ -143,7 +143,7 @@ export function decodeUniversalRouterV4(input: {
       zeroForOne: Boolean(decodedParams.zeroForOne),
       amountIn: BigInt(decodedParams.amountIn),
       minAmountOut: BigInt(decodedParams.amountOutMinimum),
-      recipient: input.account,
+      recipient: null,
       deadline,
       commands: commandBytes,
     },

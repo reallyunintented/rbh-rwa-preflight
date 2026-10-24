@@ -1,32 +1,51 @@
 import { verifyHashes } from './receipt';
+import { ReplaySource } from './evidence';
+import { assess } from './assess';
 
 export interface VerifyResult { level: number; result: 'PASS' | 'FAIL' | 'SKIPPED' | 'NOT_APPLICABLE'; }
 export function verifyL1(receipt: any): VerifyResult {
   return { level: 1, result: verifyHashes(receipt) ? 'PASS' : 'FAIL' };
 }
-export function verifyL2(receipt: any): VerifyResult {
-  if (!receipt.inputs || !receipt.evidence) return { level: 2, result: 'FAIL' };
-  const gates = receipt?.assessment?.gates ?? [];
-  const m8m9 = gates.filter((g: any) => g?.gate === 'G11_LENDING' || g?.gate === 'G12_SMART_ACCOUNT');
-  if (m8m9.some((g: any) => g.status !== 'PASS')) return { level: 2, result: 'FAIL' };
-  return { level: 2, result: verifyHashes(receipt) ? 'PASS' : 'FAIL' };
+export async function verifyL2(receipt: any): Promise<VerifyResult> {
+  if (!receipt?.inputs || !receipt?.evidence || !receipt?.assessment) return { level: 2, result: 'FAIL' };
+  try {
+    const src = new ReplaySource(receipt.evidence as any[]);
+    const rebuilt = await assess({ source: src as any, action: receipt.inputs.action, policy: receipt.inputs.policy });
+    const a = receipt.assessment;
+    const b = (rebuilt as any).assessment;
+    if (a?.verdict !== b?.verdict) return { level: 2, result: 'FAIL' };
+    if (JSON.stringify(a?.reasons ?? []) !== JSON.stringify(b?.reasons ?? [])) return { level: 2, result: 'FAIL' };
+    if (JSON.stringify(a?.gates ?? []) !== JSON.stringify(b?.gates ?? [])) return { level: 2, result: 'FAIL' };
+    if (!verifyHashes(receipt)) return { level: 2, result: 'FAIL' };
+    return { level: 2, result: 'PASS' };
+  } catch {
+    return { level: 2, result: 'FAIL' };
+  }
 }
 export async function verifyL3(receipt: any, rpcProvided: boolean, rpcUrl?: string): Promise<VerifyResult> {
   if (!rpcProvided || !rpcUrl) return { level: 3, result: 'SKIPPED' };
   const chain = receipt?.assessment?.chain ?? receipt?.chain;
   if (!chain?.blockNumber || !chain?.blockHash) return { level: 3, result: 'SKIPPED' };
-  try {
-    const res = await fetch(rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBlockByNumber', params: [chain.blockNumber, false] }) });
-    const json = await res.json();
-    if (json?.result?.hash === chain.blockHash) return { level: 3, result: 'PASS' };
-    return { level: 3, result: 'FAIL' };
-  } catch { return { level: 3, result: 'SKIPPED' }; }
+  const items = (receipt?.evidence ?? []).filter((e: any) => e?.source === 'rpc' && e?.class === 'onchain-reverifiable');
+  if (items.length === 0) return { level: 3, result: 'PASS' };
+  let checked = 0;
+  for (const it of items) {
+    try {
+      const res = await fetch(rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: (it.request as any)?.method, params: (it.request as any)?.params }) });
+      const json = await res.json();
+      if (json?.result !== undefined && JSON.stringify(json.result) !== JSON.stringify(it.response)) return { level: 3, result: 'FAIL' };
+      checked++;
+    } catch {
+      return { level: 3, result: 'FAIL' };
+    }
+  }
+  return { level: 3, result: 'PASS' };
 }
 export async function verify(receipt: any, levels: number[] = [1, 2], rpcProvided: boolean = false, rpcUrl?: string): Promise<VerifyResult[]> {
   const out: VerifyResult[] = [];
   for (const l of levels) {
     if (l === 1) out.push(verifyL1(receipt));
-    else if (l === 2) out.push(verifyL2(receipt));
+    else if (l === 2) out.push(await verifyL2(receipt));
     else if (l === 3) out.push(await verifyL3(receipt, rpcProvided, rpcUrl));
     else out.push({ level: l, result: 'SKIPPED' });
   }

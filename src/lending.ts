@@ -10,7 +10,7 @@ export function assessLending(input: LendingAssessmentInput): { safe: boolean; r
   if (input.collateralValue <= 0n) return { safe: false, reason: 'INVALID_COLLATERAL' };
   if (input.ltvBps > input.liquidationThresholdBps) return { safe: false, reason: 'LTV_EXCEEDS_THRESHOLD' };
   if (input.ltvBps > input.collateralFactorBps) return { safe: false, reason: 'LTV_EXCEEDS_COLLATERAL_FACTOR' };
-  const ltv = (input.borrowedValue * 10000n) / input.collateralValue;
-  if (Number(ltv) > input.ltvBps) return { safe: false, reason: 'LTV_EXCEEDS_POLICY' };
+  const ltvBpsComputed = (input.borrowedValue * 10000n) / input.collateralValue;
+  if (ltvBpsComputed > BigInt(input.ltvBps)) return { safe: false, reason: 'LTV_EXCEEDS_POLICY' };
   return { safe: true };
 }

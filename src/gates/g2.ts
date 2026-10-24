@@ -1,5 +1,6 @@
-export function g2Sequencer(input: { feedKnown: boolean; up: boolean; graceElapsed: boolean; sequencerAssurance?: 'strict' | 'degraded'; signals?: { maxGapSec: number; headLagSec: number }; thresholds?: { maxGapSec: number; maxHeadLagSec: number }; }) {
+export function g2Sequencer(input: { feedKnown: boolean; up: boolean; graceElapsed: boolean; sequencerAssurance?: 'strict' | 'degraded'; policyProvenanceHash?: string; signals?: { maxGapSec: number; headLagSec: number }; thresholds?: { maxGapSec: number; maxHeadLagSec: number }; }) {
   if (input.sequencerAssurance === 'degraded' && !input.feedKnown) {
+    if (!input.policyProvenanceHash) return { gate: 'G2_SEQUENCER', status: 'UNKNOWN', reasons: ['SEQUENCER_UPTIME_UNAVAILABLE'], enforcement: 'none', details: {}, evidenceRefs: [] } as any;
     const signals = input.signals ?? { maxGapSec: 0, headLagSec: 0 };
     const thresholds = input.thresholds ?? { maxGapSec: 60, maxHeadLagSec: 30 };
     const clean = signals.maxGapSec <= thresholds.maxGapSec && signals.headLagSec <= thresholds.maxHeadLagSec;

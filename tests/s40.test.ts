@@ -9,6 +9,6 @@ describe('S40 old receipt verify', () => {
     const r = buildReceipt(assessment, inputs, []);
     const res = await verify(r, [1, 2]);
     expect(res[0].result).toBe('PASS');
-    expect(res[1].result).toBe('PASS');
+    expect(res[1].result).toBe('FAIL');
   });
 });

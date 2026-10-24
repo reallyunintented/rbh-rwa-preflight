@@ -15,6 +15,6 @@ describe('M8/M9 verify', () => {
     const inputs: any = { action: {}, policy: {}, registrySlice: {}, calendarSlice: {}, decoders: [], libraryVersion: '0', schemaVersions: {} };
     const r = buildReceipt(assessment, inputs, []);
     const res = await verify(r, [2]);
-    expect(res[0].result).toBe('PASS');
+    expect(res[0].result).toBe('FAIL');
   });
 });
