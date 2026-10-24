@@ -38,13 +38,13 @@ const action = {
 
 describe('verify L2 positive (AUDIT F-03)', () => {
   it('a legitimately built receipt re-derives: L2 PASS', async () => {
-    const r = await assess({ source: stubSource(), action, policy: {} as any });
+    const r = await assess({ source: stubSource(), action, policy: { maxSlippageBps:100, maxOracleDeviationBps:150, maxPoolFeeBps:100, offSessionPolicy:'defer', requireIssuerSignals:true, maxIssuerSignalAgeSec:300, corporateActionLookaheadSec:86400, corporateActionLookbackSec:3600, maxDeadlineSec:300, allowedRecipients:'self', maxAssessmentAgeSec:30, pinBlockTag:'latest' } as any });
     const res = await verifyL2(r as any);
     expect(res.result).toBe('PASS');
   });
 
   it('flipping a gate AND repairing hashes -> L1 PASS but L2 FAIL (rebuild mismatch)', async () => {
-    const r = JSON.parse(JSON.stringify(await assess({ source: stubSource(), action, policy: {} as any })));
+    const r = JSON.parse(JSON.stringify(await assess({ source: stubSource(), action, policy: { maxSlippageBps:100, maxOracleDeviationBps:150, maxPoolFeeBps:100, offSessionPolicy:'defer', requireIssuerSignals:true, maxIssuerSignalAgeSec:300, corporateActionLookaheadSec:86400, corporateActionLookbackSec:3600, maxDeadlineSec:300, allowedRecipients:'self', maxAssessmentAgeSec:30, pinBlockTag:'latest' } as any })));
     // mutate a FAIL_HARD gate to PASS, then recompute all hashes with the library itself
     const g1 = (r as any).assessment.gates.find((g: any) => g.gate === 'G1_ASSET');
     g1.status = 'PASS';

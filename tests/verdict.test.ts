@@ -3,18 +3,27 @@ import { aggregate, readyInvariant } from '../src/verdict';
 
 describe('verdict', () => {
   it('precedence', () => {
-    expect(aggregate([{ status: 'FAIL_HARD' }, { status: 'UNKNOWN' }])).toBe('BLOCKED');
-    expect(aggregate([{ status: 'UNKNOWN' }])).toBe('HUMAN_REVIEW');
-    expect(aggregate([{ status: 'FAIL_TRANSIENT' }])).toBe('DEFER');
-    expect(aggregate([{ status: 'PASS' }])).toBe('READY');
+    const invBadFails = { decoderOk: false, g8Pass: false, unresolvedAssumptions: 1 };
+    expect(aggregate([{ status: 'FAIL_HARD' }, { status: 'UNKNOWN' }], invBadFails)).toBe('BLOCKED');
+    expect(aggregate([{ status: 'UNKNOWN' }], invBadFails)).toBe('HUMAN_REVIEW');
+    expect(aggregate([{ status: 'FAIL_TRANSIENT' }], invBadFails)).toBe('DEFER');
+    expect(aggregate([{ status: 'PASS' }], { decoderOk: true, g8Pass: true, unresolvedAssumptions: 0 })).toBe('READY');
+  });
+
+  it('readyInvariant is mandatory for READY (AUDIT F-02)', () => {
+    // all-PASS gates without the invariant -> never READY
+    expect(aggregate([{ status: 'PASS' }], { decoderOk: false, g8Pass: true, unresolvedAssumptions: 0 })).toBe('HUMAN_REVIEW');
+    expect(aggregate([{ status: 'PASS' }], { decoderOk: true, g8Pass: false, unresolvedAssumptions: 0 })).toBe('HUMAN_REVIEW');
+    expect(aggregate([{ status: 'PASS' }], { decoderOk: true, g8Pass: true, unresolvedAssumptions: 1 })).toBe('HUMAN_REVIEW');
   });
 
   it('fail-closed normalization (AUDIT F-01)', () => {
-    expect(aggregate([{ status: 'PASS ' }])).toBe('HUMAN_REVIEW'); // typo'd status
-    expect(aggregate([{ status: 'pass' }])).toBe('HUMAN_REVIEW');
-    expect(aggregate([{ status: 'SKIPPED' }])).toBe('HUMAN_REVIEW');
-    expect(aggregate([{ status: undefined as any }])).toBe('HUMAN_REVIEW');
-    expect(aggregate([])).toBe('HUMAN_REVIEW'); // no gates is never READY
+    const invBad = { decoderOk: false, g8Pass: false, unresolvedAssumptions: 1 };
+    expect(aggregate([{ status: 'PASS ' }], invBad)).toBe('HUMAN_REVIEW'); // typo'd status
+    expect(aggregate([{ status: 'pass' }], invBad)).toBe('HUMAN_REVIEW');
+    expect(aggregate([{ status: 'SKIPPED' }], invBad)).toBe('HUMAN_REVIEW');
+    expect(aggregate([{ status: undefined as any }], invBad)).toBe('HUMAN_REVIEW');
+    expect(aggregate([], invBad)).toBe('HUMAN_REVIEW'); // no gates is never READY
   });
 });
 

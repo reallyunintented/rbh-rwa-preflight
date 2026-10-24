@@ -13,6 +13,7 @@ export const PolicySchema = z.object({
   corporateActionLookaheadSec: z.number().int(),
   corporateActionLookbackSec: z.number().int(),
   maxDeadlineSec: z.number().int(),
+  maxNotionalQuote: z.string().optional(),
   allowedRecipients: z.union([z.array(AddressSchema), z.literal('self')]),
   maxAssessmentAgeSec: z.number().int(),
   pinBlockTag: z.enum(['latest', 'safe', 'finalized']),

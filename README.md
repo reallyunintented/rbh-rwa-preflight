@@ -10,9 +10,9 @@
 AI agents can suggest trades, but they need a deterministic, verifiable pre-trade check before anything is sent. rwa-preflight provides that check without signing or sending anything.
 
 ## What it does
-- Verifies asset identity, oracle, corporate actions, issuer signals, valuation, decoding, simulation, execution quality, policy.
-- Decodes and simulates the actual transaction; `intent` is diagnostic only.
-- Returns READY only for supported formats with state-verified effects.
+- Pure gate functions for asset identity, oracle, corporate actions, issuer signals, valuation, decoding, simulation, execution quality, policy.
+- Receipt format (self-contained, block-pinned, replayable and tamper-evident) with L1/L2/L3 verification.
+- Simulation/registry probing and token allowlist wiring are in progress; assess() currently fails closed.
 
 ## What it does not do
 - Does not sign or send transactions.

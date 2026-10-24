@@ -15,10 +15,15 @@ import { g11Lending } from './gates/g11';
 import { assessLending } from './lending';
 import { validateUserOp } from './smart-account';
 import { aggregate, readyInvariant } from './verdict';
-import { decodeUniversalRouterV4 } from './decoders/universal-router-v4';
+import { PolicySchema } from './schemas';
+import pkg from '../package.json';
 import { keccak256, toHex } from 'viem';
+import { decodeUniversalRouterV4 } from './decoders/universal-router-v4';
+import { runSimulation } from './simulator';
 
 export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; action: any; policy: any; }) {
+  const parsed = PolicySchema.safeParse(input.policy);
+  if (!parsed.success) throw new Error('INPUT_INCOMPLETE');
   const src = (input.source ?? new LiveSource(input.rpcUrl as string)) as EvidenceSource;
   const chainIdItem = await src.rpc('eth_chainId', []);
   const rpcChainId = parseInt(chainIdItem.response as string, 16);
@@ -54,7 +59,8 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
   gates.push(g5Issuer({ halt: false, tradable: false, available: false, stale: true, multiplierMatch: false }));
   gates.push(g6Valuation({ quoteResolved: false }));
   gates.push(g7Decode({ decoderOk: decoderRes.ok, decoderReason: decoderRes.ok ? undefined : decoderRes.reason }));
-  gates.push(g8Simulation({ available: false, reverted: false, unexpectedBalance: false, unexpectedAllowance: false, prerequisiteMissing: false }));
+  const sim = await runSimulation(src as any, input.action.tx, { blockNumber, account: input.action.account });
+  gates.push(g8Simulation(sim));
   gates.push(g9ExecutionQuality({ deviationBps: 0, policyBps: 0, minOutImpliedOk: false }));
   if (input.action.lending) {
     const lr = assessLending(input.action.lending);
@@ -69,10 +75,29 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
         ? decoded.recipient.toLowerCase() === String(input.action.account).toLowerCase()
         : Array.isArray(input.policy.allowedRecipients) && input.policy.allowedRecipients.map((x: string) => x.toLowerCase()).includes(decoded.recipient.toLowerCase()))
     : false;
+  const decodedTokens = decoded
+    ? { tokenIn: decoded.zeroForOne ? decoded.poolKey.currency0 : decoded.poolKey.currency1,
+        tokenOut: decoded.zeroForOne ? decoded.poolKey.currency1 : decoded.poolKey.currency0 }
+    : null;
+  const allowTokens = Array.isArray(input.policy.allowTokens)
+    ? input.policy.allowTokens.map((x: string) => x.toLowerCase())
+    : null;
+  const tokenAllowed = decodedTokens && allowTokens
+    ? allowTokens.includes(decodedTokens.tokenIn.toLowerCase()) && allowTokens.includes(decodedTokens.tokenOut.toLowerCase())
+    : false; // fail-closed: no allowlist configured -> not allowed
+  const poolString = decoded ? `${decoded.poolKey.currency0}/${decoded.poolKey.currency1}/${decoded.poolKey.fee}/${decoded.poolKey.tickSpacing}/${decoded.poolKey.hooks}` : null;
+  const allowedPools = Array.isArray(input.policy.allowedPools) ? input.policy.allowedPools : null;
+  const poolAllowed = decoded && allowedPools ? allowedPools.includes(poolString) : undefined; // no pool policy -> no pool check
   gates.push(g10Policy({
-    tokenAllowed: false,
+    tokenAllowed,
     recipientAllowed,
     minAmountOutZero: decoded ? decoded.minAmountOut === 0n : true,
+    deadlineSec: decoded?.deadline,
+    maxDeadlineSec: input.policy.maxDeadlineSec,
+    poolAllowed,
+    poolFeeBps: decoded?.poolKey.fee,
+    maxPoolFeeBps: input.policy.maxPoolFeeBps,
+    notionalOk: decoded && input.policy.maxNotionalQuote ? (decoded.amountIn <= BigInt(input.policy.maxNotionalQuote)) : undefined,
   }));
 
   // READY invariant: decoder must be ok and g8 must pass and no unresolved assumptions.
@@ -87,7 +112,7 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
     }
   }
 
-  const verdict = aggregate(gates);
+  const verdict = aggregate(gates, { decoderOk, g8Pass, unresolvedAssumptions });
   const assessment: any = {
     schema: 'rwa-preflight/assessment/v0.3',
     verdict,
@@ -101,6 +126,6 @@ export async function assess(input: { rpcUrl?: string; source?: EvidenceSource; 
     hashes: { inputs: '', evidence: '', assessment: '' },
   };
   assessment.policyProvenance = (input as any).policyProvenance;
-  const receipt = buildReceipt(assessment, { action: input.action, policy: input.policy, registrySlice: {}, calendarSlice: {}, decoders: [], libraryVersion: '0.0.0', schemaVersions: {} }, src.items());
+  const receipt = buildReceipt(assessment, { action: input.action, policy: input.policy, registrySlice: {}, calendarSlice: {}, decoders: [], libraryVersion: pkg.version, schemaVersions: {} }, src.items());
   return receipt;
 }
