@@ -8,18 +8,22 @@ Statuses marked VERIFIED reflect actual code state, not prior claims.
 ## Attack order (amended)
 
 ### 1. Intent cross-check DECODE_MISMATCH (S22) — was missing from the original plan
-- `DECODE_MISMATCH` exists only in the reasons.ts vocabulary; nothing computes it.
-- assess trusts decoded calldata; when the operator's declared intent differs from
-  the decoded constraints (if intent is provided), the receipt must say so.
-- Tests first: intent==decoded fine; intent token/amount divergence => reason
-  DECODE_MISMATCH => HUMAN_REVIEW/BLOCKED per policy; absent intent => no check.
+- DONE 2026-10-24 (fix-forward of a63c38a): a63c38a wired the compare inline in
+  assess with a throw-on-malformed BigInt and a float Number() deadline compare.
+  Now extracted to pure `src/intent.ts` (`intentDecodeMismatch`): fail-closed on
+  malformed declared values (mismatch, never crash), deadline compared as bigint
+  (no precision loss), case-insensitive compare, decoded.recipient null falls back
+  to account exactly like the simulator, intent-deadline-present-but-undecodable is
+  a mismatch. Tests: tests/intent-crosscheck.test.ts (8 cases, incl. the 2^53+1
+  precision fence). G10 still FAIL_HARDs with DECODE_MISMATCH.
 
 ### 2. Gate-set completeness (F-02 remainder, MEDIUM)
-- Genuinely open: assess pushes G0..G10 (+ conditional G11/G12) but asserts nothing;
-  aggregate guards the invariant, not set membership.
-- In assess(), assert the full expected gate set G0..G10 is present before aggregation.
-- aggregate() should reject a missing expected gate (treat as not passing).
-- Tests first: a receipt missing G7 must never be READY; assess always emits G0..G10.
+- DONE 2026-10-24 (fix-forward, tests first): aggregate() takes an optional
+  expectedGateIds list; a missing or typo'd gate id never counts as passing
+  (HUMAN_REVIEW), severity checks (FAIL_HARD/UNKNOWN/FAIL_TRANSIENT) still dominate.
+  assess passes the full G0..G10 list (belt-and-braces with the existing throw).
+  Extra conditional gates (G11/G12) tolerated. Tests in tests/verdict.test.ts
+  (missing G7 -> HUMAN_REVIEW, typo'd id -> HUMAN_REVIEW, extras tolerated).
 
 ### 3. Already-done behaviors: add fence tests only (do NOT reimplement)
 - L3 checked/of: VERIFIED DONE at code level — verifyL3 returns checked/of and both
@@ -30,10 +34,16 @@ Statuses marked VERIFIED reflect actual code state, not prior claims.
 - L2 positive path: covered by tests/verify-l2-positive.test.ts.
 
 ### 4. L2 provenance verification (LOW) — genuinely open
-- When a policy file is supplied at verify time, verify
-  policyProvenance.operatorPolicyHash against loadOperatorPolicy; else SKIPPED with
-  a documented reason.
-- Tests: matching hash PASS; mismatched FAIL.
+- DONE 2026-10-24 (fix-forward of a63c38a): a63c38a's provenance check sat inside
+  verifyL3's evidence loop, labeled {level:2}, and never ran under the CLI default
+  levels [1,2] (verify only reaches L3 when requested). Moved into verifyL2: runs at
+  default levels, level-2 label preserved, fail-closed on broken inputs
+  (missing/broken inputs.policy -> FAIL, not crash), matching-hash PASS preserved.
+  Tests: tests/verify-provenance.test.ts (uses tests/helpers-l2provenance.ts).
+- Remaining nuance (noted, open): this verifies receipt self-consistency
+  (assessment.policyProvenance vs sha256(canonicalize(inputs.policy))). The
+  operator-supplied policy FILE variant needs a verify-side input convention and
+  stays open.
 
 ### 5. Small mechanical hygiene (batch)
 - Sequencer negative-lag signal (Q-05): record negative lag as a signal
@@ -41,10 +51,13 @@ Statuses marked VERIFIED reflect actual code state, not prior claims.
   scaffolded in assess) but cheap to land properly.
 - Money-number guard test (Q-06): no money `number` in receipt fields; bigint or
   decimal strings only.
-- onlyBuiltDependencies: migrate pnpm.onlyBuiltDependencies to pnpm-workspace.yaml
-  (pnpm 12 no longer reads the package.json field).
-- npm audit (Q-08): run when network permits; record results.
-- CLI assess parity: deeper golden test, SPEC section 11.
+- onlyBuiltDependencies: DONE 2026-10-24 — a63c38a had deleted the esbuild allowlist
+  while leaving the ignored `pnpm.onlyBuiltDependencies` field in package.json
+  (backwards); fixed: field removed from package.json, `esbuild` allowlist restored
+  in pnpm-workspace.yaml. Deprecation warning verified gone (`pnpm install
+  --frozen-lockfile`, zero matches on "no longer read").
+- Fence tests that remain: L3 checked/of in CLI/MCP output; meter no-NORMAL labels;
+  npm audit (Q-08, network permitting); CLI assess golden test (SPEC section 11).
 
 ### 6. UR decoder live-fixture validation (O9 caveat) — HIGH-VALUE, was missing
 - The decoded swap-struct layout (chain-specific extra field per O9, decoded min-out

@@ -25,7 +25,7 @@ earlier plan and are now items 1 and 6 of the amended order).
   iteration with checked/of counts and FAIL on RPC error/null responses, redacted
   error sinks in MCP/CLI, sha256 policy provenance, bigint-only lending comparison,
   sessionKnown → MARKET_CALENDAR_UNKNOWN.
-- 48 test files / 117 tests green (post-3b03a73); lint clean; secret scan clean.
+- 51 test files / 136 tests green (post fix-forward of a63c38a); lint clean; secret scan clean.
 - Reason set added: READY_INVARIANT_VIOLATED, SEQUENCER_GAP_DETECTED,
   SEQUENCER_DEGRADED_ASSURANCE (with the minor version bump SPEC section 7 requires).
 

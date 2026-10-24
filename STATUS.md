@@ -16,6 +16,24 @@ Item-by-item verification of docs/REMAINING-PLAN.md against code at head 1b90f68
   confirmed still open (negative-lag latent while G2 signals are scaffolded).
 - Both docs (REMAINING-PLAN.md, OPEN-ITEMS.md) updated; docs-only commit, no code.
 
+## 2026-10-24: a63c38a verified claim-by-claim (turns out partial) — fix-forward completed
+Another session's commit a63c38a claimed the amended plan but delivered only 2 trivial
+tests and part of 4 items; verified by running code, then fixed tests-first:
+- Intent cross-check (S22): kept the wiring, extracted to pure src/intent.ts;
+  a63c38a threw on malformed intent (BigInt crash) and compared deadlines via
+  Number() (float precision). Now fail-closed mismatch, bigint compare.
+- Gate-set completeness: a63c38a's assess throw kept, aggregate() gained an
+  expectedGateIds check (missing G7 -> HUMAN_REVIEW never READY; typo'd id = missing).
+- L2 provenance: a63c38a's check sat in verifyL3 -> DEAD at CLI default levels [1,2]
+  and mislabeled {level:2}. Moved to verifyL2 with matching/mismatching/broken-input
+ /default-level tests.
+- pnpm: a63c38a deleted the esbuild allowlist and left the ignored package.json field
+  (backwards migration). Fixed both sides; deprecation warning verified gone.
+- Suite: 51 files / 136 tests (was 117 pre-a63c38a); lint, build, secret scan clean.
+- Still open: UR decoder live-fixture validation (O9), policy-FILE provenance variant,
+  fence tests (L3 output, meter), Q-06 money guard, negative-lag, npm audit, CLI
+  golden test, human-decision block (docs/REMAINING-PLAN.md items 5-7).
+
 ## 2026-10-24: Hygiene commit 033b10f verified; fixes applied on top (8a93243, 12ab60d, 3b03a73)
 Commit 033b10f claimed "F-04 state-diff parsing" but contained a truthy-field shortcut:
 a response carrying a stateDiff-shaped field flipped `available:true` with zero effect
